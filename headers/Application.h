@@ -2,14 +2,16 @@
 
 #include "../Thirdparty/imgui/imgui.h"
 #include "../Thirdparty/imgui/imgui-SFML.h"
+#include "../Thirdparty/dir/ImGuiFileDialog/ImGuiFileDialog.h"
 #include <SFML/Graphics.hpp>
 #include "ReservationStation.h"
-
+#include "Controller.h"
+#include "SpecialQueue.h"
 #include <vector>
 #include <list>
 #include <string>
 #include <iostream>
-
+#include <fstream>
 enum class Windows
 {
     Memory = 0,
@@ -40,6 +42,10 @@ private:
     void RenderWindowImGuiLayer();
     void InstructionsImGuiLayer();
 
+    void LoadInstructionsFile();
+
+    int LoadData(const std::string &inFileName);
+
 private:
     sf::RenderWindow *m_Window;
     sf::RenderTexture *m_RenderTexture;
@@ -51,6 +57,8 @@ private:
     int16_t m_RegisterFileData[8];
     sf::View m_View;
     ImVec2 m_WindowSize;
+    SpecialQueue m_InstructionsQueue;
+    // std::queue<Instruction> m_InstructionQueue;
 
     sf::Clock deltaClock;
 };

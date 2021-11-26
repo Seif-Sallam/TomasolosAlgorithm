@@ -1,4 +1,6 @@
 #include "../headers/Instruction.h"
+#include "../Thirdparty/imgui/imgui.h"
+#include "../Thirdparty/imgui/imgui-SFML.h"
 #include <iostream>
 
 Instruction::Instruction(const std::string &str)
@@ -107,4 +109,64 @@ void Instruction::Parse()
         index = strCopy.find("R");
         rs1 = strCopy[index + 1] - '0';
     }
+}
+
+void Instruction::ImGuiLayer(bool top)
+{
+    ImGui::BeginChild("Instruction");
+    ImGui::Columns(7);
+    ImGui::Text(str.c_str());
+    ImGui::NextColumn();
+    switch (type)
+    {
+    case Unit::ADD:
+        ImGui::Text("ADD");
+        break;
+    case Unit::ADDI:
+        ImGui::Text("ADDI");
+        break;
+    case Unit::LW:
+        ImGui::Text("LW");
+        break;
+    case Unit::SW:
+        ImGui::Text("SW");
+        break;
+    case Unit::BEQ:
+        ImGui::Text("BEQ");
+        break;
+    case Unit::JAL:
+        ImGui::Text("JAL");
+        break;
+    case Unit::JALR:
+        ImGui::Text("JALR");
+        break;
+    case Unit::NEG:
+        ImGui::Text("NEG");
+        break;
+    case Unit::ABS:
+        ImGui::Text("ABS");
+        break;
+    case Unit::DIV:
+        ImGui::Text("DIV");
+        break;
+    default:
+        break;
+    }
+    ImGui::NextColumn();
+    ImGui::Text("%d", rs1);
+    ImGui::NextColumn();
+    ImGui::Text("%d", rs2);
+    ImGui::NextColumn();
+    ImGui::Text("%d", rd);
+    ImGui::NextColumn();
+    ImGui::Text("%d", imm);
+    ImGui::NextColumn();
+    if (top)
+        ImGui::Text("<-");
+    else
+        ImGui::Text("");
+
+    ImGui::Separator();
+    ImGui::Columns(1);
+    ImGui::EndChild();
 }

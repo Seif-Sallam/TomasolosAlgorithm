@@ -9,8 +9,8 @@ struct Instruction
     Unit type;
     int32_t rs1, rs2, rd, imm;
     Instruction(const std::string &str);
+    void ImGuiLayer(bool top);
 
 private:
     void Parse();
-    int32_t GetRegister(const std::string &rdStr);
 };

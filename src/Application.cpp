@@ -131,7 +131,9 @@ void Application::SetupDockingSpace()
     static bool flag = true;
     ImGui::Begin("Docking Space", &flag, windowFlags);
     // ImGui::PopStyleVar();
-
+    ImGui::BeginMenuBar();
+    LoadInstructionsFile();
+    ImGui::EndMenuBar();
     ImGui::DockSpace(ImGui::GetID("Docking Space"));
 }
 
@@ -266,6 +268,27 @@ void Application::RenderWindowImGuiLayer()
     ImGui::End();
 }
 
+void Application::LoadInstructionsFile()
+{
+
+    if (ImGui::Button("Load Instruction"))
+
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "ChooseFile", ".txt", ".");
+    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
+    {
+        if (ImGuiFileDialog::Instance()->IsOk())
+        {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            int err = LoadData(filePathName);
+            if (err)
+            {
+                std::cout << "Error file was not read correctly\n";
+            }
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
+}
+
 void Application::InstructionsImGuiLayer()
 {
     ImGui::Begin("Instructions Queue");
@@ -273,5 +296,52 @@ void Application::InstructionsImGuiLayer()
     {
         m_ActiveWindow = Windows::Instructions;
     }
+    ImGui::BeginChild("InstructionTable");
+    ImGui::BeginChild("Instruction");
+    {
+        ImGui::Separator();
+        ImGui::Columns(7);
+        ImGui::Text("Instruction");
+        ImGui::NextColumn();
+        ImGui::Text("Type");
+        ImGui::NextColumn();
+        ImGui::Text("Rs1");
+        ImGui::NextColumn();
+        ImGui::Text("Rs2");
+        ImGui::NextColumn();
+        ImGui::Text("Rd");
+        ImGui::NextColumn();
+        ImGui::Text("Imm");
+        ImGui::NextColumn();
+        ImGui::Text("Top");
+        ImGui::Columns(1);
+        ImGui::Separator();
+        ImGui::EndChild();
+        static int &Qtop = m_InstructionsQueue.top;
+        for (int i = 0; i < m_InstructionsQueue.container.size(); i++)
+        {
+            m_InstructionsQueue[i].ImGuiLayer(i == Qtop);
+        }
+    }
+    ImGui::EndChild();
     ImGui::End();
+}
+
+int Application::LoadData(const std::string &inFileName)
+{
+    std::ifstream inputFile(inFileName);
+    if (!inputFile.is_open())
+        return 1;
+
+    m_InstructionsQueue.Clear();
+
+    while (!inputFile.eof())
+    {
+        std::string instruction;
+        std::getline(inputFile, instruction);
+        if (instruction.size() > 3)
+            m_InstructionsQueue.Push(Instruction(instruction));
+    }
+    inputFile.close();
+    return 0;
 }
