@@ -1,84 +1,32 @@
-// #include <iostream>
-// #include "../headers/ImGuiFunctions.h"
-
-// int main()
-// {
-//     std::map<unsigned short, unsigned short> memory;
-//     std::string registerNames[8];
-//     ImVec2 windowSize = {640, 480};
-//     short registerData[8];
-//     sf::RenderWindow window(sf::VideoMode(640, 480), "Simulation :)");
-//     window.setFramerateLimit(60);
-//     ImGui::SFML::Init(window);
-//     for (int i = 0; i < 8; i++)
-//     {
-//         registerNames[i] = "R" + std::to_string(i);
-//         registerData[i] = i;
-//     }
-//     std::vector<ReservationStation> stations;
-//     stations.push_back(ReservationStation("Load1", Unit::LW));
-//     stations.push_back(ReservationStation("Load2", Unit::LW));
-//     stations.push_back(ReservationStation("BEQ", Unit::BEQ));
-//     stations.push_back(ReservationStation("DIV", Unit::DIV));
-//     sf::CircleShape shape(100.f);
-//     shape.setFillColor(sf::Color::Green);
-//     ImGuiIO &io = ImGui::GetIO();
-//     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-//     float f = 0.f;
-//     sf::Clock deltaClock;
-//     sf::View view;
-//     sf::RenderTexture texture;
-//     while (window.isOpen())
-//     {
-//         sf::Event event;
-//         while (window.pollEvent(event))
-//         {
-//             ImGui::SFML::ProcessEvent(event);
-
-//             if (event.type == sf::Event::Closed)
-//             {
-//                 window.close();
-//             }
-//             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::Escape)
-//                 window.close();
-//         }
-//         if (s_ActiveWindow == Windows::RenderWindow)
-//         {
-//             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-//                 view.move(sf::Vector2f(-10.0f, 0.0f));
-//             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-//                 view.move(sf::Vector2f(10.0f, 0.0f));
-//             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-//                 view.move(sf::Vector2f(0.0f, -10.0f));
-//             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-//                 view.move(sf::Vector2f(0.0f, 10.0f));
-//         }
-//         static float f = 0.f;
-//         ImGui::SFML::Update(window, deltaClock.restart());
-//         {
-//             SetupDockingSpace(window);
-//             MemoryImGuiLayer(memory);
-//             RegisterFileImGuiLayer(registerData, registerNames);
-//             InstructionsImGuiLayer();
-//             RenderWindowImGuiLayer(window, texture, view, windowSize);
-//             ReservationStationsLayer(stations);
-//             ImGui::End();
-//         }
-
-//         window.clear();
-//         texture.clear();
-//         texture.setView(view);
-//         texture.draw(shape);
-//         ImGui::SFML::Render(window);
-//         texture.display();
-//         window.display();
-//     }
-
-//     ImGui::SFML::Shutdown();
-// }
 #include "../headers/Application.h"
+#include "../headers/Instruction.h"
 int main()
 {
+    /*
+        LOAD rd, imm(rs1)
+        STORE rs2, imm(rs1)
+        BEQ rs1, rs2, imm
+        ADDI rd, rs1, imm
+        JAL rd, imm
+        JALR rd, rs1
+        NEG rd, rs1
+        ABS rd, rs1
+        ADD rd, rs1, rs2
+        DIV rd, rs1, rs2
+    */
+    std::string instructions[] = {
+        "LOAD R2, 10(R1   )",
+        "STORE    R4,      1(      R2)",
+        "BEQ R7,       R5, 14",
+        "JAL R3,   13",
+        "ADDI    R1,  R5,   -13",
+        "JALR R0,   R5",
+        "NEG    R3,     R7",
+        "DIV     R4, R6, R2"};
+    for (int i = 0; i < sizeof(instructions) / sizeof(std::string); i++)
+    {
+        Instruction inst(instructions[i]);
+    }
     Application app(sf::Vector2u(640, 480), "Simulation :)");
     app.Run();
 }

@@ -108,11 +108,14 @@ void Application::RenderElements()
 
 void Application::CleanUp()
 {
-    ImGui::SFML::Shutdown();
+    if (m_Window != nullptr)
+        ImGui::SFML::Shutdown();
     if (m_RenderTexture != nullptr)
         delete m_RenderTexture;
     if (m_Window != nullptr)
         delete m_Window;
+    m_RenderTexture = nullptr;
+    m_Window = nullptr;
 }
 
 void Application::SetupDockingSpace()

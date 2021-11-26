@@ -8,13 +8,13 @@ IMGUI_SRC_DIR= ./Thirdparty/imgui/
 LIBS= -lGL -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 IMGUI_OBJECTS_DIR= ./imguiObjects/
 IMGUI_OBJECTS= $(IMGUI_OBJECTS_DIR)imgui_demo.obj $(IMGUI_OBJECTS_DIR)imgui_draw.obj $(IMGUI_OBJECTS_DIR)imgui_tables.obj $(IMGUI_OBJECTS_DIR)imgui.obj $(IMGUI_OBJECTS_DIR)imgui_widgets.obj $(IMGUI_OBJECTS_DIR)imgui-SFML.obj
-OBJECTS= main.obj ReservationStation.obj Application.obj
+OBJECTS= main.obj ReservationStation.obj Application.obj Controller.obj Instruction.obj
 CCFLAGS=-c -I$(SFML_INC_DIR) -I$(IMGUI_INC_DIR)  
 
-all: Proj
+all: Proj.out
 
-Proj: $(OBJECTS) $(IMGUI_OBJECTS)
-	$(CC) $(OBJECTS) $(IMGUI_OBJECTS) -o Proj -L$(LIB_DIR) $(LIBS)
+Proj.out: $(OBJECTS) $(IMGUI_OBJECTS)
+	$(CC) $(OBJECTS) $(IMGUI_OBJECTS) -o Proj.out -L$(LIB_DIR) $(LIBS)
 
 main.obj: $(SRC_DIR)main.cpp $(IMGUI_OBJECTS)
 	$(CC) $(SRC_DIR)main.cpp $(CCFLAGS) -o main.obj
@@ -24,6 +24,12 @@ ReservationStation.obj: $(SRC_DIR)ReservationStation.cpp $(SRC_INC_DIR)Reservati
 
 Application.obj: $(SRC_DIR)Application.cpp
 	$(CC) $(SRC_DIR)Application.cpp $(CCFLAGS) -o Application.obj
+
+Controller.obj: $(SRC_DIR)Controller.cpp 
+	$(CC) $(SRC_DIR)Controller.cpp $(CCFLAGS) -o Controller.obj
+
+Instruction.obj: $(SRC_DIR)Instruction.cpp
+	$(CC) $(SRC_DIR)Instruction.cpp $(CCFLAGS) -o Instruction.obj
 
 $(IMGUI_OBJECTS_DIR)imgui_demo.obj: $(IMGUI_SRC_DIR)imgui_demo.cpp 
 	$(CC) $(IMGUI_SRC_DIR)imgui_demo.cpp $(CCFLAGS) -o $(IMGUI_OBJECTS_DIR)imgui_demo.obj
