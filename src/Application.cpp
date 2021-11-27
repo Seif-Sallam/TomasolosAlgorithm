@@ -18,11 +18,6 @@ Application::Application(sf::Vector2u windowSize, const std::string &windowTitle
     m_RenderTexture->setSmooth(true);
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    m_Stations.push_back(ReservationStation("Load1", Unit::LW));
-    m_Stations.push_back(ReservationStation("Load2", Unit::LW));
-    m_Stations.push_back(ReservationStation("BEQ", Unit::BEQ));
-    m_Stations.push_back(ReservationStation("DIV", Unit::DIV));
 }
 
 void Application::Run()
@@ -142,8 +137,65 @@ void Application::ReservationStationsLayer()
 {
     ImGui::Begin("Reservation Stations");
     if (ImGui::IsWindowFocused())
-    {
         m_ActiveWindow = Windows::ReservationStations;
+    const char *items[] = {"LW", "SW", "BEQ", "JAL/JALR", "ADD/ADDI", "NEG", "ABS", "DIV"};
+    static const char *currentItem = NULL;
+    if (ImGui::BeginCombo("##COMBO", currentItem))
+    {
+        for (int i = 0; i < sizeof(items) / sizeof(char *); i++)
+        {
+            bool isSelected = (items[i] == currentItem);
+            if (ImGui::Selectable(items[i], isSelected))
+            {
+                currentItem = items[i];
+            }
+            if (isSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Add Station"))
+    {
+        if (currentItem != "")
+        {
+            if (currentItem == "LW")
+            {
+                m_Stations.push_back(ReservationStation("LOAD", Unit::LW));
+            }
+            else if (currentItem == "SW")
+            {
+                m_Stations.push_back(ReservationStation("STORE", Unit::SW));
+            }
+            else if (currentItem == "BEQ")
+            {
+                m_Stations.push_back(ReservationStation("BEQ", Unit::BEQ));
+            }
+            else if (currentItem == "JAL/JALR")
+            {
+                m_Stations.push_back(ReservationStation("JAL/JALR", Unit::JAL));
+            }
+            else if (currentItem == "ADD/ADDI")
+            {
+                m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
+            }
+            else if (currentItem == "NEG")
+            {
+                m_Stations.push_back(ReservationStation("NEG", Unit::NEG));
+            }
+            else if (currentItem == "ABS")
+            {
+                m_Stations.push_back(ReservationStation("ABS", Unit::ABS));
+            }
+            else if (currentItem == "DIV")
+            {
+                m_Stations.push_back(ReservationStation("DIV", Unit::DIV));
+            }
+        }
+        std::sort(m_Stations.begin(), m_Stations.end(), [](ReservationStation &a1, ReservationStation &a2)
+                  { return a1.GetStr() < a2.GetStr(); });
     }
     ImGui::BeginChild("Stations Table");
     ImGui::Separator();
