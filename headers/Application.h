@@ -6,6 +6,7 @@
 #include <SFML/Graphics.hpp>
 #include "ReservationStation.h"
 #include "Controller.h"
+#include "RegisterFile.h"
 #include <vector>
 #include <list>
 #include <string>
@@ -47,10 +48,10 @@ private:
     int LoadData(const std::string &inFileName);
 
 private:
+    std::map<uint16_t, int16_t> m_Memory;
     sf::RenderWindow *m_Window;
     sf::RenderTexture *m_RenderTexture;
     std::vector<ReservationStation> m_Stations;
-    std::map<uint16_t, uint16_t> m_Memory;
     Windows m_ActiveWindow;
 
     std::string m_RegisterFileNames[8];
@@ -61,4 +62,6 @@ private:
     std::vector<Instruction> m_InstructionsQueue;
     int m_Top;
     sf::Clock deltaClock;
+    RegisterFile m_RegFile;
+    Controller *m_Controller;
 };

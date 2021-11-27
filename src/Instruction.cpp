@@ -10,6 +10,8 @@ Instruction::Instruction(const std::string &str)
     issue = {false, -1};
     execute = {false, -1};
     writeBack = {false, -1};
+    m_CurrentCycle = 0;
+    SetMaxCycles(3);
 }
 
 void Instruction::Parse()
@@ -119,7 +121,7 @@ void Instruction::Parse()
         strCopy = strCopy.substr(index + 1);
         index = strCopy.find("R");
         rs1 = strCopy[index + 1] - '0';
-        str = ((type == Unit::JAL) ? "JAL R" : ((type == Unit::NEG) ? "NEG R" : "ABS R")) + std::to_string(rd) + ", R" + std::to_string(rs1);
+        str = ((type == Unit::JALR) ? "JALR R" : ((type == Unit::NEG) ? "NEG R" : "ABS R")) + std::to_string(rd) + ", R" + std::to_string(rs1);
     }
 }
 
@@ -127,7 +129,7 @@ void Instruction::ImGuiLayer(bool top)
 {
     ImGui::BeginChild("Instruction");
     ImGui::Columns(7);
-    ImGui::Text(str.c_str());
+    ImGui::Text(str.c_str(), "");
     ImGui::NextColumn();
     switch (type)
     {
@@ -176,9 +178,17 @@ void Instruction::ImGuiLayer(bool top)
     if (top)
         ImGui::Text("<-");
     else
-        ImGui::Text("");
+        ImGui::Text("", "");
 
     ImGui::Separator();
     ImGui::Columns(1);
     ImGui::EndChild();
 }
+
+bool Instruction::Finished()
+{
+    // std::cout << "Current: " << m_CurrentCycle << " max: " << m_MaxCycleNumber << std::endl;
+    return m_CurrentCycle == m_MaxCycleNumber;
+}
+
+void Instruction::Advance() { m_CurrentCycle++; }

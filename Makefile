@@ -10,7 +10,7 @@ LIBS= -lGL -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 IMGUI_OBJECTS_DIR= ./imguiObjects/
 IMGUI_OBJECTS= $(IMGUI_OBJECTS_DIR)imgui_demo.obj $(IMGUI_OBJECTS_DIR)imgui_draw.obj $(IMGUI_OBJECTS_DIR)imgui_tables.obj $(IMGUI_OBJECTS_DIR)imgui.obj $(IMGUI_OBJECTS_DIR)imgui-SFML.obj $(IMGUI_OBJECTS_DIR)imgui_widgets.obj 
 IMGUI_DIALOG_OBJECTS= $(IMGUI_OBJECTS_DIR)ImGuiFileDialog.obj 
-OBJECTS= main.obj ReservationStation.obj Application.obj Controller.obj Instruction.obj
+OBJECTS= main.obj ReservationStation.obj Application.obj Controller.obj Instruction.obj RegisterFile.obj
 INC= -I$(SFML_INC_DIR) -I$(IMGUI_INC_DIR) -I$(IMGUI_DIALOG_DIR)
 CCFLAGS=-c $(INC)
 
@@ -22,16 +22,19 @@ Proj.out: $(OBJECTS) $(IMGUI_OBJECTS)  $(IMGUI_DIALOG_OBJECTS)
 main.obj: $(SRC_DIR)main.cpp $(IMGUI_OBJECTS)
 	$(CC) $(SRC_DIR)main.cpp $(CCFLAGS) -o main.obj
 
-ReservationStation.obj: $(SRC_DIR)ReservationStation.cpp $(SRC_INC_DIR)ReservationStation.h
+RegisterFile.obj: $(SRC_DIR)RegisterFile.cpp $(SRC_INC_DIR)RegisterFile.h
+	$(CC) $(SRC_DIR)RegisterFile.cpp $(CCFLAGS) -o RegisterFile.obj
+
+ReservationStation.obj: $(SRC_DIR)ReservationStation.cpp $(SRC_INC_DIR)ReservationStation.h 
 	$(CC) $(SRC_DIR)ReservationStation.cpp $(CCFLAGS) -o ReservationStation.obj
 
-Application.obj: $(SRC_DIR)Application.cpp 
+Application.obj: $(SRC_DIR)Application.cpp $(SRC_DIR)Controller.cpp  $(SRC_DIR)ReservationStation.cpp $(SRC_DIR)Instruction.cpp $(SRC_DIR)RegisterFile.cpp $(SRC_INC_DIR)Application.h
 	$(CC) $(SRC_DIR)Application.cpp $(CCFLAGS) -o Application.obj
 
-Controller.obj: $(SRC_DIR)Controller.cpp 
+Controller.obj: $(SRC_DIR)Controller.cpp  $(SRC_DIR)ReservationStation.cpp $(SRC_DIR)Instruction.cpp $(SRC_DIR)RegisterFile.cpp $(SRC_INC_DIR)Controller.h
 	$(CC) $(SRC_DIR)Controller.cpp $(CCFLAGS) -o Controller.obj
 
-Instruction.obj: $(SRC_DIR)Instruction.cpp
+Instruction.obj: $(SRC_DIR)Instruction.cpp $(SRC_INC_DIR)Instruction.h
 	$(CC) $(SRC_DIR)Instruction.cpp $(CCFLAGS) -o Instruction.obj
 
 $(IMGUI_OBJECTS_DIR)ImGuiFileDialog.obj:

@@ -1,5 +1,4 @@
 #include "../headers/Application.h"
-
 Application::Application(sf::Vector2u windowSize, const std::string &windowTitle)
     : m_ActiveWindow(Windows::RenderWindow)
 {
@@ -30,6 +29,7 @@ Application::Application(sf::Vector2u windowSize, const std::string &windowTitle
     m_Stations.push_back(ReservationStation("NEG", Unit::NEG));
     m_Stations.push_back(ReservationStation("ABS", Unit::ABS));
     m_Stations.push_back(ReservationStation("DIV", Unit::DIV));
+    m_Controller = new Controller(m_Top, m_InstructionsQueue, m_Stations, m_RegFile, m_Memory);
 }
 
 void Application::Run()
@@ -122,6 +122,9 @@ void Application::CleanUp()
         delete m_RenderTexture;
     if (m_Window != nullptr)
         delete m_Window;
+    if (m_Controller != nullptr)
+        delete m_Controller;
+    m_Controller = nullptr;
     m_RenderTexture = nullptr;
     m_Window = nullptr;
 }
@@ -218,13 +221,11 @@ void Application::ReservationStationsLayer()
     }
     ImGui::BeginChild("Stations Table");
     ImGui::Separator();
-    ImGui::Columns(9);
+    ImGui::Columns(8);
     {
         ImGui::Text("Station Name");
         ImGui::NextColumn();
         ImGui::Text("Busy?");
-        ImGui::NextColumn();
-        ImGui::Text("Vi");
         ImGui::NextColumn();
         ImGui::Text("Vj");
         ImGui::NextColumn();
@@ -307,18 +308,22 @@ void Application::RegisterFileImGuiLayer()
     ImGui::Begin("Register File");
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::RegisterFile;
-    ImGui::Columns(2, "Table");
+    ImGui::Columns(3, "Table");
     ImGui::Separator();
     ImGui::Text("Register");
     ImGui::NextColumn();
     ImGui::Text("Value");
     ImGui::NextColumn();
+    ImGui::Text("Producing Unit");
+    ImGui::NextColumn();
     ImGui::Separator();
     for (int i = 0; i < 8; i++)
     {
-        ImGui::Text("%s", m_RegisterFileNames[i].c_str());
+        ImGui::Text("%s", m_RegFile.m_RegisterName[i].c_str());
         ImGui::NextColumn();
-        ImGui::Text("%d", m_RegisterFileData[i]);
+        ImGui::Text("%d", m_RegFile.m_RegisterValue[i]);
+        ImGui::NextColumn();
+        ImGui::Text("%s", m_RegFile.m_ProducingUnit[i].c_str());
         ImGui::NextColumn();
         ImGui::Separator();
     }
@@ -326,14 +331,7 @@ void Application::RegisterFileImGuiLayer()
     ImGui::Columns(1);
     if (ImGui::Button("Click me to Advance"))
     {
-        if (m_Top >= m_InstructionsQueue.size())
-        {
-            m_Top = 0;
-        }
-        else
-        {
-            m_Top++;
-        }
+        m_Controller->Advance();
     }
     ImGui::End();
 }
@@ -436,7 +434,7 @@ void Application::InstructionExecutationLayer()
             ImGui::Columns(4);
             for (int i = 0; i < m_InstructionsQueue.size(); i++)
             {
-                ImGui::Text(m_InstructionsQueue[i].str.c_str());
+                ImGui::Text(m_InstructionsQueue[i].str.c_str(), "");
                 ImGui::NextColumn();
                 if (m_InstructionsQueue[i].issue.first)
                     ImGui::Text("Y(%d)", m_InstructionsQueue[i].issue.second);

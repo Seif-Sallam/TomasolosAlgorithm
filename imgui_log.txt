@@ -1,4 +1,0 @@
-{ 0.000 } Some Float
-{ 0.000 } Some Float
-{ 0.000 } Some Float
-
