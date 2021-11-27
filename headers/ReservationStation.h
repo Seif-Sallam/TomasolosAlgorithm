@@ -13,6 +13,7 @@ public:
     void ImGuiLayer();
     inline std::string GetStr() { return m_Name + std::to_string(m_StationNumber); }
     static int stationsCount[uint32_t(Unit::UNIT_COUNT)];
+    inline Unit GetType() { return m_Type; }
 
 private:
     std::string m_Name;

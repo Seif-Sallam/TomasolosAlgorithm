@@ -8,7 +8,7 @@ ReservationStation::ReservationStation(const std::string &name, Unit type)
 
 void ReservationStation::ImGuiLayer()
 {
-    ImGui::Columns(8);
+    ImGui::Columns(9);
     {
         ImGui::Text("%s %d", m_Name.c_str(), m_StationNumber);
         ImGui::NextColumn();
@@ -26,5 +26,4 @@ void ReservationStation::ImGuiLayer()
         ImGui::NextColumn();
         ImGui::Text("%d", A);
     }
-    ImGui::Columns(1);
 }

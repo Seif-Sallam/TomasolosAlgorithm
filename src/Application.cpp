@@ -18,6 +18,18 @@ Application::Application(sf::Vector2u windowSize, const std::string &windowTitle
     m_RenderTexture->setSmooth(true);
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    m_Stations.push_back(ReservationStation("LOAD", Unit::LW));
+    m_Stations.push_back(ReservationStation("LOAD", Unit::LW));
+    m_Stations.push_back(ReservationStation("STORE", Unit::SW));
+    m_Stations.push_back(ReservationStation("STORE", Unit::SW));
+    m_Stations.push_back(ReservationStation("BEQ", Unit::BEQ));
+    m_Stations.push_back(ReservationStation("JAL/JALR", Unit::JAL));
+    m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
+    m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
+    m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
+    m_Stations.push_back(ReservationStation("NEG", Unit::NEG));
+    m_Stations.push_back(ReservationStation("ABS", Unit::ABS));
+    m_Stations.push_back(ReservationStation("DIV", Unit::DIV));
 }
 
 void Application::Run()
@@ -197,9 +209,16 @@ void Application::ReservationStationsLayer()
         std::sort(m_Stations.begin(), m_Stations.end(), [](ReservationStation &a1, ReservationStation &a2)
                   { return a1.GetStr() < a2.GetStr(); });
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Delete all"))
+    {
+        for (int i = 0; i < int(Unit::UNIT_COUNT); i++)
+            ReservationStation::stationsCount[i] = 0;
+        m_Stations.clear();
+    }
     ImGui::BeginChild("Stations Table");
     ImGui::Separator();
-    ImGui::Columns(8);
+    ImGui::Columns(9);
     {
         ImGui::Text("Station Name");
         ImGui::NextColumn();
@@ -218,10 +237,19 @@ void Application::ReservationStationsLayer()
         ImGui::Text("A");
     }
     ImGui::Columns(1);
+
     ImGui::Separator();
-    for (auto &station : m_Stations)
+    for (int i = 0; i < m_Stations.size(); i++)
     {
-        station.ImGuiLayer();
+        m_Stations[i].ImGuiLayer();
+        ImGui::NextColumn();
+        ImGui::PushID(i);
+        if (ImGui::Button("X"))
+        {
+            m_Stations.erase(m_Stations.begin() + i);
+        }
+        ImGui::PopID();
+        ImGui::Columns(1);
         ImGui::Separator();
     }
     ImGui::EndChild();
@@ -232,9 +260,8 @@ void Application::MemoryImGuiLayer()
 {
     ImGui::Begin("Memory");
     if (ImGui::IsWindowFocused())
-    {
         m_ActiveWindow = Windows::Memory;
-    }
+
     ImGui::BeginChild("Table Mem");
     {
         static int addr = 0;
@@ -279,9 +306,7 @@ void Application::RegisterFileImGuiLayer()
 {
     ImGui::Begin("Register File");
     if (ImGui::IsWindowFocused())
-    {
         m_ActiveWindow = Windows::RegisterFile;
-    }
     ImGui::Columns(2, "Table");
     ImGui::Separator();
     ImGui::Text("Register");
