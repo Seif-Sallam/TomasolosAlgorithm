@@ -1,12 +1,11 @@
 #pragma once
 
-#include "../Thirdparty/imgui/imgui.h"
-#include "../Thirdparty/imgui/imgui-SFML.h"
-#include "../Thirdparty/dir/ImGuiFileDialog/ImGuiFileDialog.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui-SFML.h"
+#include "ImGuiFileDialog.h"
 #include <SFML/Graphics.hpp>
 #include "ReservationStation.h"
 #include "Controller.h"
-#include "SpecialQueue.h"
 #include <vector>
 #include <list>
 #include <string>
@@ -41,6 +40,7 @@ private:
     void RegisterFileImGuiLayer();
     void RenderWindowImGuiLayer();
     void InstructionsImGuiLayer();
+    void InstructionExecutationLayer();
 
     void LoadInstructionsFile();
 
@@ -57,8 +57,8 @@ private:
     int16_t m_RegisterFileData[8];
     sf::View m_View;
     ImVec2 m_WindowSize;
-    SpecialQueue m_InstructionsQueue;
-    // std::queue<Instruction> m_InstructionQueue;
 
+    std::vector<Instruction> m_InstructionsQueue;
+    int m_Top;
     sf::Clock deltaClock;
 };

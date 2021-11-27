@@ -60,6 +60,7 @@ void Application::Update()
         RegisterFileImGuiLayer();
         RenderWindowImGuiLayer();
         InstructionsImGuiLayer();
+        InstructionExecutationLayer();
     }
     ImGui::End(); // Docking space end
 }
@@ -246,7 +247,17 @@ void Application::RegisterFileImGuiLayer()
     }
 
     ImGui::Columns(1);
-
+    if (ImGui::Button("Click me to Advance"))
+    {
+        if (m_Top >= m_InstructionsQueue.size())
+        {
+            m_Top = 0;
+        }
+        else
+        {
+            m_Top++;
+        }
+    }
     ImGui::End();
 }
 
@@ -270,7 +281,6 @@ void Application::RenderWindowImGuiLayer()
 
 void Application::LoadInstructionsFile()
 {
-
     if (ImGui::Button("Load Instruction"))
 
         ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "ChooseFile", ".txt", ".");
@@ -317,13 +327,62 @@ void Application::InstructionsImGuiLayer()
         ImGui::Columns(1);
         ImGui::Separator();
         ImGui::EndChild();
-        static int &Qtop = m_InstructionsQueue.top;
-        for (int i = 0; i < m_InstructionsQueue.container.size(); i++)
+
+        for (int i = 0; i < m_InstructionsQueue.size(); i++)
         {
-            m_InstructionsQueue[i].ImGuiLayer(i == Qtop);
+            m_InstructionsQueue[i].ImGuiLayer(i == m_Top);
         }
     }
     ImGui::EndChild();
+    ImGui::End();
+}
+
+void Application::InstructionExecutationLayer()
+{
+    ImGui::Begin("Instruction Executation");
+    {
+        ImGui::Text("Logging to a imgui_log.txt");
+        ImGui::LogButtons();
+
+        ImGui::BeginChild("Tabular");
+        {
+            ImGui::Columns(4);
+            ImGui::Text("Instruction");
+            ImGui::NextColumn();
+            ImGui::Text("Issue");
+            ImGui::NextColumn();
+            ImGui::Text("Execute");
+            ImGui::NextColumn();
+            ImGui::Text("WriteBack");
+            ImGui::NextColumn();
+            ImGui::Separator();
+            ImGui::Columns(4);
+            for (int i = 0; i < m_InstructionsQueue.size(); i++)
+            {
+                ImGui::Text(m_InstructionsQueue[i].str.c_str());
+                ImGui::NextColumn();
+                if (m_InstructionsQueue[i].issue.first)
+                    ImGui::Text("Y(%d)", m_InstructionsQueue[i].issue.second);
+                else
+                    ImGui::Text("N");
+
+                ImGui::NextColumn();
+                if (m_InstructionsQueue[i].execute.first)
+                    ImGui::Text("Y(%d)", m_InstructionsQueue[i].execute.second);
+                else
+                    ImGui::Text("N");
+
+                ImGui::NextColumn();
+                if (m_InstructionsQueue[i].writeBack.first)
+                    ImGui::Text("Y(%d)", m_InstructionsQueue[i].writeBack.second);
+                else
+                    ImGui::Text("N");
+                ImGui::NextColumn();
+                ImGui::Separator();
+            }
+        }
+        ImGui::EndChild();
+    }
     ImGui::End();
 }
 
@@ -333,14 +392,14 @@ int Application::LoadData(const std::string &inFileName)
     if (!inputFile.is_open())
         return 1;
 
-    m_InstructionsQueue.Clear();
-
+    m_InstructionsQueue.clear();
+    m_Top = 0;
     while (!inputFile.eof())
     {
         std::string instruction;
         std::getline(inputFile, instruction);
         if (instruction.size() > 3)
-            m_InstructionsQueue.Push(Instruction(instruction));
+            m_InstructionsQueue.push_back(Instruction(instruction));
     }
     inputFile.close();
     return 0;

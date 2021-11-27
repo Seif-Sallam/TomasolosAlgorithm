@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "../headers/ReservationStation.h"
-#include "../headers/Instruction.h"
+#include "ReservationStation.h"
+#include "Instruction.h"
 #include <vector>
 #include <queue>
 

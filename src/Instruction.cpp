@@ -1,22 +1,27 @@
 #include "../headers/Instruction.h"
-#include "../Thirdparty/imgui/imgui.h"
-#include "../Thirdparty/imgui/imgui-SFML.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui-SFML.h"
 #include <iostream>
 
 Instruction::Instruction(const std::string &str)
     : str(str)
 {
     Parse();
+    issue = {false, -1};
+    execute = {false, -1};
+    writeBack = {false, -1};
 }
 
 void Instruction::Parse()
 {
     int32_t index = str.find(" ");
     std::string strCopy = str;
+    for (int i = 0; i < strCopy.size(); i++)
+        strCopy[i] = toupper(strCopy[i]);
     std::string typeStr = strCopy.substr(0, index);
+    //Removed Type
     strCopy = strCopy.substr(index + 1);
-    for (int i = 0; i < typeStr.size(); i++)
-        typeStr[i] = toupper(typeStr[i]);
+
     rd = 0;
     imm = 0;
     rs1 = 0;
@@ -31,6 +36,7 @@ void Instruction::Parse()
         imm = stoi(strCopy.substr(0, index2));
         index2 = strCopy.find("R");
         rs1 = strCopy[index2 + 1] - '0';
+        str = "LOAD R" + std::to_string(rd) + ", " + std::to_string(imm) + "(R" + std::to_string(rs1) + ")";
     }
     else if (typeStr == "STORE")
     {
@@ -42,6 +48,7 @@ void Instruction::Parse()
         imm = stoi(strCopy.substr(0, index2));
         index2 = strCopy.find("R");
         rs1 = strCopy[index2 + 1] - '0';
+        str = "STORE R" + std::to_string(rs2) + ", " + std::to_string(imm) + "(R" + std::to_string(rs1) + ")";
     }
     else if (typeStr == "BEQ")
     {
@@ -53,6 +60,7 @@ void Instruction::Parse()
         rs2 = strCopy[index + 1] - '0';
         index = strCopy.find(",");
         imm = stoi(strCopy.substr(index + 1));
+        str = "BEQ R" + std::to_string(rs1) + ", " + "R" + std::to_string(rs2) + ", " + std::to_string(imm);
     }
     else if (typeStr == "JAL")
     {
@@ -61,6 +69,7 @@ void Instruction::Parse()
         rd = strCopy[index + 1] - '0';
         index = strCopy.find(",");
         imm = stoi(strCopy.substr(index + 1));
+        str = "JAL R" + std::to_string(rd) + ", " + std::to_string(imm);
     }
     else if (typeStr == "JALR")
         type = Unit::JALR;
@@ -78,6 +87,7 @@ void Instruction::Parse()
         index = strCopy.find(",");
         strCopy = strCopy.substr(index + 1);
         imm = stoi(strCopy);
+        str = "ADDI R" + std::to_string(rd) + ", R" + std::to_string(rs1) + ", " + std::to_string(imm);
     }
     else if (typeStr == "NEG")
         type = Unit::NEG;
@@ -98,6 +108,7 @@ void Instruction::Parse()
         strCopy = strCopy.substr(index + 1);
         index = strCopy.find("R");
         rs2 = strCopy[index + 1] - '0';
+        str = ((type == Unit::ADD) ? "ADD R" : "DIV R") + std::to_string(rd) + ", R" + std::to_string(rs1) + ", R" + std::to_string(rs2);
     }
 
     if (type == Unit::JALR || type == Unit::NEG || type == Unit::ABS)
@@ -108,6 +119,7 @@ void Instruction::Parse()
         strCopy = strCopy.substr(index + 1);
         index = strCopy.find("R");
         rs1 = strCopy[index + 1] - '0';
+        str = ((type == Unit::JAL) ? "JAL R" : ((type == Unit::NEG) ? "NEG R" : "ABS R")) + std::to_string(rd) + ", R" + std::to_string(rs1);
     }
 }
 
