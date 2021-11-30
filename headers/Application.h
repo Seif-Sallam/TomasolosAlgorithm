@@ -24,7 +24,7 @@ enum class Windows
 class Application
 {
 public:
-    Application(sf::Vector2u windowsSize, const std::string &windowTitle);
+    Application();
     void Run();
     ~Application();
 
@@ -65,5 +65,6 @@ private:
     sf::Clock deltaClock;
     RegisterFile m_RegFile;
     Controller *m_Controller;
-    uint32_t PC;
+    int32_t PC;
+    bool m_Fullscreen = false;
 };

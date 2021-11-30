@@ -164,7 +164,15 @@ void Controller::Advance()
                         m_Memory[station.A] = station.result;
                     }
                 }
-
+                if (type == Unit::BEQ)
+                {
+                    if (station.result == 1)
+                    {
+                        //Branch should be taken, we should flush the instructions after the branch and we change the PC
+                        m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
+                        //Flush?
+                    }
+                }
                 CDB.sourceStation = station.m_Name;
                 CDB.value = station.result;
 

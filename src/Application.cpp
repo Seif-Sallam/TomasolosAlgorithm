@@ -1,9 +1,9 @@
 #include "../headers/Application.h"
-Application::Application(sf::Vector2u windowSize, const std::string &windowTitle)
+Application::Application()
     : m_ActiveWindow(Windows::RenderWindow)
 {
-    m_WindowSize = ImVec2(windowSize.x, windowSize.y);
-    m_Window = new sf::RenderWindow(sf::VideoMode(windowSize.x, windowSize.y), windowTitle);
+    m_WindowSize = ImVec2(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height);
+    m_Window = new sf::RenderWindow(sf::VideoMode(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height), "Tomasolo's Algorithm");
     m_Window->setFramerateLimit(60);
     ImGui::SFML::Init(*m_Window);
 
@@ -88,6 +88,21 @@ void Application::HandleEvents()
         {
             m_Window->close();
         }
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F)
+        {
+            if (!m_Fullscreen)
+            {
+                m_Window->create(sf::VideoMode(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height), "Tomasolo's Algorithm", sf::Style::Fullscreen);
+                m_Window->setFramerateLimit(60);
+                m_Fullscreen = true;
+            }
+            else
+            {
+                m_Window->create(sf::VideoMode(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height), "Tomasolo's Algorithm", sf::Style::Default);
+                m_Window->setFramerateLimit(60);
+                m_Fullscreen = false;
+            }
+        }
     }
 }
 
@@ -146,6 +161,9 @@ void Application::SetupDockingSpace()
     // ImGui::PopStyleVar();
     ImGui::BeginMenuBar();
     LoadInstructionsFile();
+    ImGui::Text("PC: %d", m_Top + PC);
+    ImGui::Separator();
+    ImGui::Text("Cycle Number: %d", m_Controller->GetCycleNumber());
     ImGui::EndMenuBar();
     ImGui::DockSpace(ImGui::GetID("Docking Space"));
 }
@@ -331,18 +349,32 @@ void Application::RegisterFileImGuiLayer()
     }
     ImGui::Columns(1);
 
-    ImGui::Text("PC: %d", m_Top + PC);
-    ImGui::Text("Cycle Number: %d", m_Controller->GetCycleNumber());
-    if (ImGui::Button("Click me to Advance"))
+    if (ImGui::Button("Next Cycle", ImVec2(ImGui::GetWindowWidth(), 22.0f)))
         m_Controller->Advance();
-    if (ImGui::Button("Reset"))
+
+    if (ImGui::Button("Reset", ImVec2(ImGui::GetWindowWidth() / 3.0f, 22.0f)))
         Reset();
 
+    ImGui::SameLine();
+    if (ImGui::Button("Reset Register File", ImVec2(ImGui::GetWindowWidth() * 2.0f / 3.0f, 22.0f)))
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            m_RegFile.m_RegisterValue[i] = 0;
+        }
+    }
     ImGui::Separator();
-    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f);
+
+    // ImGui::TextUnformatted("Custom Starting PC Value:");
+    // ImGui::SameLine();
+    // ImGui::InputInt("", &PC, 1, 100, ImGuiInputTextFlags_AlwaysOverwrite);
+    // ImGui::Separator();
+
+    ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
     ImGui::TextUnformatted("Changes the number of cycles for each instruction and an extra cycle for JAL, JALR, and BEQ instructions to compute the address, and 2 extra cycles for LW and SW to read/write from the memory");
 
     ImGui::PopTextWrapPos();
+
     for (int i = 0; i < int32_t(Unit::UNIT_COUNT); i++)
         ImGui::SliderInt(s_UnitName[i].c_str(), &s_CyclesCount[i], 1, 20);
 
@@ -489,12 +521,16 @@ int Application::LoadData(const std::string &inFileName)
 
     m_InstructionsQueue.clear();
     m_Top = 0;
+    int i = 0;
     while (!inputFile.eof())
     {
         std::string instruction;
         std::getline(inputFile, instruction);
         if (instruction.size() > 3)
-            m_InstructionsQueue.push_back(Instruction(instruction));
+        {
+            m_InstructionsQueue.push_back(Instruction(instruction, i));
+            i++;
+        }
     }
     inputFile.close();
     return 0;

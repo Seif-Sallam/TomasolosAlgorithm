@@ -17,7 +17,7 @@ struct Instruction
     int32_t rs1, rs2, rd, imm;
     std::pair<bool, int32_t> issue, execute, writeBack;
     Stage currentStage = ISSUE;
-    Instruction(const std::string &str);
+    Instruction(const std::string &str, int PC);
     void ImGuiLayer(bool top);
     inline void UpdateCycleCount()
     {
@@ -32,9 +32,10 @@ struct Instruction
     void Clean();
 
 private:
-    void
-    Parse();
+    void Parse();
     int m_MaxCycleNumber;
     int m_CurrentCycle = 0;
+    int m_PC;
     friend class Controller;
+    friend class ReservationStation;
 };

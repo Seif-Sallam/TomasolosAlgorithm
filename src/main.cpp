@@ -14,6 +14,6 @@ int main()
         ADD rd, rs1, rs2
         DIV rd, rs1, rs2
     */
-    Application app(sf::Vector2u(640, 480), "Simulation :)");
+    Application app;
     app.Run();
 }

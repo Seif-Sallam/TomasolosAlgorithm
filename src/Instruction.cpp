@@ -3,8 +3,8 @@
 #include "imgui/imgui-SFML.h"
 #include <iostream>
 
-Instruction::Instruction(const std::string &str)
-    : str(str)
+Instruction::Instruction(const std::string &str, int PC)
+    : str(str), m_PC(PC)
 {
     Parse();
     issue = {false, -1};
