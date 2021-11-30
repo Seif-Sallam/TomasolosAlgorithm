@@ -500,22 +500,3 @@ int Application::LoadData(const std::string &inFileName)
     inputFile.close();
     return 0;
 }
-
-// void Application::Sort()
-// {
-//     for (int step = 1; step < m_Stations.size(); step++)
-//     {
-//         auto &key = m_Stations[step];
-//         int j = step - 1;
-
-//         // Compare key with each element on the left of it until an element smaller than
-//         // it is found.
-//         // For descending order, change key<array[j] to key>array[j].
-//         while (key.GetStr() < m_Stations[j].GetStr() && j >= 0)
-//         {
-//             m_Stations[j + 1] = m_Stations[j];
-//             --j;
-//         }
-//         m_Stations[j + 1] = key;
-//     }
-// }
