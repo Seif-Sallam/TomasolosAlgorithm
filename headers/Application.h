@@ -43,6 +43,7 @@ private:
     void InstructionsImGuiLayer();
     void InstructionExecutationLayer();
 
+    void Reset();
     void LoadInstructionsFile();
 
     int LoadData(const std::string &inFileName);

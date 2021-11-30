@@ -19,12 +19,13 @@ struct Instruction
     Stage currentStage = ISSUE;
     Instruction(const std::string &str);
     void ImGuiLayer(bool top);
-    inline void SetMaxCycles(int cycles)
+    inline void UpdateCycleCount()
     {
-        m_MaxCycleNumber = cycles;
-        if (type == Unit::JAL || type == Unit::JALR || type == Unit::BEQ ||
-            type == Unit::SW || type == Unit::LW)
+        m_MaxCycleNumber = s_CyclesCount[(int)(type)];
+        if (type == Unit::JAL || type == Unit::JALR || type == Unit::BEQ)
             m_MaxCycleNumber++;
+        if (type == Unit::SW || type == Unit::LW)
+            m_MaxCycleNumber += 2;
     }
     void Advance();
     bool Finished();

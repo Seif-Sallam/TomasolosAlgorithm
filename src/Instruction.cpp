@@ -11,7 +11,7 @@ Instruction::Instruction(const std::string &str)
     execute = {false, -1};
     writeBack = {false, -1};
     m_CurrentCycle = 0;
-    SetMaxCycles(3);
+    UpdateCycleCount();
 }
 
 void Instruction::Parse()
@@ -178,7 +178,7 @@ void Instruction::ImGuiLayer(bool top)
     if (top)
         ImGui::Text("<-");
     else
-        ImGui::Text("", "");
+        ImGui::Text(" ");
 
     ImGui::Separator();
     ImGui::Columns(1);
@@ -187,7 +187,6 @@ void Instruction::ImGuiLayer(bool top)
 
 bool Instruction::Finished()
 {
-    // std::cout << "Current: " << m_CurrentCycle << " max: " << m_MaxCycleNumber << std::endl;
     return m_CurrentCycle == m_MaxCycleNumber;
 }
 

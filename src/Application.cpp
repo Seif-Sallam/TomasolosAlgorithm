@@ -336,43 +336,42 @@ void Application::RegisterFileImGuiLayer()
     if (ImGui::Button("Click me to Advance"))
         m_Controller->Advance();
     if (ImGui::Button("Reset"))
-    {
-        m_Controller->GetCycleNumber() = 0;
-        m_Top = 0;
-        for (int i = 0; i < m_InstructionsQueue.size(); i++)
-        {
-            m_InstructionsQueue[i].Clean();
-        }
-        for (int i = 0; i < m_Stations.size(); i++)
-        {
-            m_Stations[i].Clean();
-        }
-        m_Controller->Clean();
-        for (int i = 0; i < 8; i++)
-        {
-            m_RegFile.m_ProducingUnit[i] = "N";
-        }
-    }
+        Reset();
 
+    ImGui::Separator();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 20.0f);
+    ImGui::TextUnformatted("Changes the number of cycles for each instruction and an extra cycle for JAL, JALR, and BEQ instructions to compute the address, and 2 extra cycles for LW and SW to read/write from the memory");
+
+    ImGui::PopTextWrapPos();
+    for (int i = 0; i < int32_t(Unit::UNIT_COUNT); i++)
+        ImGui::SliderInt(s_UnitName[i].c_str(), &s_CyclesCount[i], 1, 20);
+
+    ImGui::Text("Saving will reset the simulation");
+    if (ImGui::Button("Save Data"))
+    {
+        for (int i = 0; i < m_InstructionsQueue.size(); i++)
+            m_InstructionsQueue[i].UpdateCycleCount();
+        Reset();
+    }
     ImGui::End();
 }
 
 void Application::RenderWindowImGuiLayer()
 {
-    ImGui::Begin("GameWindow");
-    if (ImGui::IsWindowFocused())
-    {
-        m_ActiveWindow = Windows::RenderWindow;
-    }
-    ImGui::BeginChild("GameRenderer");
-    sf::Vector2f size = sf::Vector2f(m_Window->getSize().x, m_Window->getSize().y);
-    m_RenderTexture->create(m_Window->getSize().x, m_Window->getSize().y);
+    // ImGui::Begin("GameWindow");
+    // if (ImGui::IsWindowFocused())
+    // {
+    //     m_ActiveWindow = Windows::RenderWindow;
+    // }
+    // ImGui::BeginChild("GameRenderer");
+    // sf::Vector2f size = sf::Vector2f(m_Window->getSize().x, m_Window->getSize().y);
+    // m_RenderTexture->create(m_Window->getSize().x, m_Window->getSize().y);
 
-    m_WindowSize = ImGui::GetWindowSize();
-    ImGui::Image(*m_RenderTexture, sf::Vector2f(m_WindowSize.x, m_WindowSize.y));
-    m_View.setSize(m_WindowSize.x * 2, m_WindowSize.y * 2);
-    ImGui::EndChild();
-    ImGui::End();
+    // m_WindowSize = ImGui::GetWindowSize();
+    // ImGui::Image(*m_RenderTexture, sf::Vector2f(m_WindowSize.x, m_WindowSize.y));
+    // m_View.setSize(m_WindowSize.x * 2, m_WindowSize.y * 2);
+    // ImGui::EndChild();
+    // ImGui::End();
 }
 
 void Application::LoadInstructionsFile()
@@ -499,4 +498,23 @@ int Application::LoadData(const std::string &inFileName)
     }
     inputFile.close();
     return 0;
+}
+
+void Application::Reset()
+{
+    m_Controller->GetCycleNumber() = 0;
+    m_Top = 0;
+    for (int i = 0; i < m_InstructionsQueue.size(); i++)
+    {
+        m_InstructionsQueue[i].Clean();
+    }
+    for (int i = 0; i < m_Stations.size(); i++)
+    {
+        m_Stations[i].Clean();
+    }
+    m_Controller->Clean();
+    for (int i = 0; i < 8; i++)
+    {
+        m_RegFile.m_ProducingUnit[i] = "N";
+    }
 }
