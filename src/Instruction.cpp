@@ -192,3 +192,12 @@ bool Instruction::Finished()
 }
 
 void Instruction::Advance() { m_CurrentCycle++; }
+
+void Instruction::Clean()
+{
+    currentStage = Stage::ISSUE;
+    execute = {false, 0};
+    issue = {false, 0};
+    writeBack = {false, 0};
+    m_CurrentCycle = 0;
+}

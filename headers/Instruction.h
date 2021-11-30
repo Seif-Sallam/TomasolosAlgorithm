@@ -28,6 +28,7 @@ struct Instruction
     }
     void Advance();
     bool Finished();
+    void Clean();
 
 private:
     void

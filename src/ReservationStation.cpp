@@ -1,8 +1,8 @@
 #include "../headers/ReservationStation.h"
 #include <iostream>
 int ReservationStation::stationsCount[uint32_t(Unit::UNIT_COUNT)]{0};
-ReservationStation::ReservationStation(const std::string &name, Unit type)
-    : m_Type(type), Vj(0), Vk(0), Qj("N"), Qk("N"), A(0), m_IsBusy(false)
+ReservationStation::ReservationStation(const std::string &name, int *top, Unit type)
+    : m_Type(type), Vj(0), Vk(0), Qj("N"), Qk("N"), A(0), m_IsBusy(false), m_Top(top)
 {
     m_StationNumber = stationsCount[uint32_t(type)]++;
     m_UnderWorkInstruction = nullptr;
@@ -72,10 +72,14 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
         break;
         case Unit::JAL:
         {
+            result = *m_Top + 1;
+            *m_Top = m_UnderWorkInstruction->imm + *m_Top;
         }
         break;
         case Unit::JALR:
         {
+            result = *m_Top + 1;
+            *m_Top = m_UnderWorkInstruction->imm + Vj;
         }
         break;
         case Unit::NEG:
