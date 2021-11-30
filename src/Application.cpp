@@ -17,19 +17,21 @@ Application::Application(sf::Vector2u windowSize, const std::string &windowTitle
     m_RenderTexture->setSmooth(true);
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    m_Stations.push_back(ReservationStation("LOAD", Unit::LW));
-    m_Stations.push_back(ReservationStation("LOAD", Unit::LW));
-    m_Stations.push_back(ReservationStation("STORE", Unit::SW));
-    m_Stations.push_back(ReservationStation("STORE", Unit::SW));
-    m_Stations.push_back(ReservationStation("BEQ", Unit::BEQ));
-    m_Stations.push_back(ReservationStation("JAL/JALR", Unit::JAL));
-    m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
-    m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
-    m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
-    m_Stations.push_back(ReservationStation("NEG", Unit::NEG));
-    m_Stations.push_back(ReservationStation("ABS", Unit::ABS));
-    m_Stations.push_back(ReservationStation("DIV", Unit::DIV));
+    m_Stations.push_back(ReservationStation("LOAD", &m_Top, Unit::LW));
+    m_Stations.push_back(ReservationStation("LOAD", &m_Top, Unit::LW));
+    m_Stations.push_back(ReservationStation("STORE", &m_Top, Unit::SW));
+    m_Stations.push_back(ReservationStation("STORE", &m_Top, Unit::SW));
+    m_Stations.push_back(ReservationStation("BEQ", &m_Top, Unit::BEQ));
+    m_Stations.push_back(ReservationStation("JAL/JALR", &m_Top, Unit::JAL));
+    m_Stations.push_back(ReservationStation("ADD/ADDI", &m_Top, Unit::ADD));
+    m_Stations.push_back(ReservationStation("ADD/ADDI", &m_Top, Unit::ADD));
+    m_Stations.push_back(ReservationStation("ADD/ADDI", &m_Top, Unit::ADD));
+    m_Stations.push_back(ReservationStation("NEG", &m_Top, Unit::NEG));
+    m_Stations.push_back(ReservationStation("ABS", &m_Top, Unit::ABS));
+    m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
     m_Controller = new Controller(m_Top, m_InstructionsQueue, m_Stations, m_RegFile, m_Memory);
+
+    PC = 0;
 }
 
 void Application::Run()
@@ -178,39 +180,39 @@ void Application::ReservationStationsLayer()
         {
             if (currentItem == "LW")
             {
-                m_Stations.push_back(ReservationStation("LOAD", Unit::LW));
+                m_Stations.push_back(ReservationStation("LOAD", &m_Top, Unit::LW));
             }
             else if (currentItem == "SW")
             {
-                m_Stations.push_back(ReservationStation("STORE", Unit::SW));
+                m_Stations.push_back(ReservationStation("STORE", &m_Top, Unit::SW));
             }
             else if (currentItem == "BEQ")
             {
-                m_Stations.push_back(ReservationStation("BEQ", Unit::BEQ));
+                m_Stations.push_back(ReservationStation("BEQ", &m_Top, Unit::BEQ));
             }
             else if (currentItem == "JAL/JALR")
             {
-                m_Stations.push_back(ReservationStation("JAL/JALR", Unit::JAL));
+                m_Stations.push_back(ReservationStation("JAL/JALR", &m_Top, Unit::JAL));
             }
             else if (currentItem == "ADD/ADDI")
             {
-                m_Stations.push_back(ReservationStation("ADD/ADDI", Unit::ADD));
+                m_Stations.push_back(ReservationStation("ADD/ADDI", &m_Top, Unit::ADD));
             }
             else if (currentItem == "NEG")
             {
-                m_Stations.push_back(ReservationStation("NEG", Unit::NEG));
+                m_Stations.push_back(ReservationStation("NEG", &m_Top, Unit::NEG));
             }
             else if (currentItem == "ABS")
             {
-                m_Stations.push_back(ReservationStation("ABS", Unit::ABS));
+                m_Stations.push_back(ReservationStation("ABS", &m_Top, Unit::ABS));
             }
             else if (currentItem == "DIV")
             {
-                m_Stations.push_back(ReservationStation("DIV", Unit::DIV));
+                m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
             }
         }
-        std::sort(m_Stations.begin(), m_Stations.end(), [](ReservationStation &a1, ReservationStation &a2)
-                  { return a1.GetStr() < a2.GetStr(); });
+        // Sort();
+        std::sort(m_Stations.begin(), m_Stations.end());
     }
     ImGui::SameLine();
     if (ImGui::Button("Delete all"))
@@ -227,6 +229,7 @@ void Application::ReservationStationsLayer()
         ImGui::NextColumn();
         ImGui::Text("Busy?");
         ImGui::NextColumn();
+
         ImGui::Text("Vj");
         ImGui::NextColumn();
         ImGui::Text("Vk");
@@ -238,7 +241,6 @@ void Application::ReservationStationsLayer()
         ImGui::Text("A");
     }
     ImGui::Columns(1);
-
     ImGui::Separator();
     for (int i = 0; i < m_Stations.size(); i++)
     {
@@ -327,12 +329,31 @@ void Application::RegisterFileImGuiLayer()
         ImGui::NextColumn();
         ImGui::Separator();
     }
-
     ImGui::Columns(1);
+
+    ImGui::Text("PC: %d", m_Top + PC);
+    ImGui::Text("Cycle Number: %d", m_Controller->GetCycleNumber());
     if (ImGui::Button("Click me to Advance"))
-    {
         m_Controller->Advance();
+    if (ImGui::Button("Reset"))
+    {
+        m_Controller->GetCycleNumber() = 0;
+        m_Top = 0;
+        for (int i = 0; i < m_InstructionsQueue.size(); i++)
+        {
+            m_InstructionsQueue[i].Clean();
+        }
+        for (int i = 0; i < m_Stations.size(); i++)
+        {
+            m_Stations[i].Clean();
+        }
+        m_Controller->Clean();
+        for (int i = 0; i < 8; i++)
+        {
+            m_RegFile.m_ProducingUnit[i] = "N";
+        }
     }
+
     ImGui::End();
 }
 
@@ -479,3 +500,22 @@ int Application::LoadData(const std::string &inFileName)
     inputFile.close();
     return 0;
 }
+
+// void Application::Sort()
+// {
+//     for (int step = 1; step < m_Stations.size(); step++)
+//     {
+//         auto &key = m_Stations[step];
+//         int j = step - 1;
+
+//         // Compare key with each element on the left of it until an element smaller than
+//         // it is found.
+//         // For descending order, change key<array[j] to key>array[j].
+//         while (key.GetStr() < m_Stations[j].GetStr() && j >= 0)
+//         {
+//             m_Stations[j + 1] = m_Stations[j];
+//             --j;
+//         }
+//         m_Stations[j + 1] = key;
+//     }
+// }

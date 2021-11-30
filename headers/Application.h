@@ -64,4 +64,5 @@ private:
     sf::Clock deltaClock;
     RegisterFile m_RegFile;
     Controller *m_Controller;
+    uint32_t PC;
 };
