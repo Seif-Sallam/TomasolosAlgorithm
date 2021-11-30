@@ -14,8 +14,9 @@ public:
                std::map<uint16_t, int16_t> &memory);
     void Advance();
     void JumpToCycle(int cycle);
-    inline int32_t GetCycleNumber() { return m_CycleNumber; }
+    inline int32_t &GetCycleNumber() { return m_CycleNumber; }
     bool IsCorrectUnit(Unit stationType, Unit instructionType);
+    void Clean();
 
 private:
     bool OperandsReady(ReservationStation &inst);
@@ -26,7 +27,7 @@ private:
     std::map<uint16_t, int16_t> &m_Memory;
     std::array<std::queue<int32_t>, 8> m_WriteBackQueues;
     int &m_Top;
-
+    std::vector<int> m_WriteBackRegistersAccess;
     struct CommonDataBus
     {
         std::string sourceStation;

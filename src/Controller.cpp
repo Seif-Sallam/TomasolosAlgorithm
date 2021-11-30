@@ -28,10 +28,10 @@ void Controller::Advance()
         {
             if (IsCorrectUnit(m_Stations[i].GetType(), type) && !m_Stations[i].IsBusy())
             {
-
                 //We issue
                 m_Stations[i].FeedInstruction(&currentInst);
                 m_Stations[i].MarkBusy(true);
+                currentInst.Clean();
                 currentInst.issue.first = true;
                 currentInst.issue.second = m_CycleNumber;
                 int32_t rs1, rs2, rd;
@@ -74,6 +74,7 @@ void Controller::Advance()
                     else
                         m_RegFile.m_ProducingUnit[rd] = "N";
                 }
+                m_WriteBackRegistersAccess.push_back(rd);
                 m_WriteBackQueues[rd].push(i);
                 m_Stations[i].m_InitiateExecutation = false;
                 currentInst.currentStage = Stage::EXECUTE;
@@ -133,10 +134,10 @@ void Controller::Advance()
             }
         }
     }
-
     // //Writing Back
-    for (int i = 0; i < 8; i++)
+    if (m_WriteBackRegistersAccess.size() >= 1)
     {
+        int i = m_WriteBackRegistersAccess[0];
         auto &Q = m_WriteBackQueues[i];
         if (!Q.empty())
         {
@@ -158,6 +159,10 @@ void Controller::Advance()
                     {
                         m_Memory.insert({station.A, station.result});
                     }
+                    else
+                    {
+                        m_Memory[station.A] = station.result;
+                    }
                 }
 
                 CDB.sourceStation = station.m_Name;
@@ -165,7 +170,7 @@ void Controller::Advance()
 
                 station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
                 station.Clean();
-                break;
+                m_WriteBackRegistersAccess.erase(m_WriteBackRegistersAccess.begin());
             }
         }
     }
@@ -219,4 +224,14 @@ bool Controller::IsCorrectUnit(Unit stationType, Unit instructionType)
         return true;
 
     return stationType == instructionType;
+}
+
+void Controller::Clean()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        while (!m_WriteBackQueues[i].empty())
+            m_WriteBackQueues[i].pop();
+    }
+    m_WriteBackRegistersAccess.clear();
 }
