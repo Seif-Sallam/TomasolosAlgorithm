@@ -109,7 +109,7 @@ void ReservationStation::Clean()
 {
     A = 0;
     m_InitiateExecutation = false;
-    m_UnderWorkInstruction = nullptr;
+    // m_UnderWorkInstruction = nullptr;
     m_IsBusy = false;
     Qj = "N";
     Qk = "N";
