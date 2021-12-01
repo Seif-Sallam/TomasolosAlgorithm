@@ -17,10 +17,13 @@ struct Instruction
     int32_t rs1, rs2, rd, imm;
     std::pair<bool, int32_t> issue, execute, writeBack;
     Stage currentStage = ISSUE;
+    int stationNumber;
     Instruction(const std::string &str, int PC);
     Instruction(Instruction &i2);
     Instruction(const Instruction &i2);
-    void ImGuiLayer(bool top) const;
+    void ImGuiLayer(bool top, bool showTop) const;
+    void MarkAsFlushed();
+    bool IsFlushed();
     inline void UpdateCycleCount()
     {
         m_MaxCycleNumber = s_CyclesCount[(int)(type)];
@@ -38,6 +41,7 @@ private:
     int m_MaxCycleNumber;
     int m_CurrentCycle = 0;
     int m_PC;
+    bool m_Flushed = false;
     friend class Controller;
     friend class ReservationStation;
 };

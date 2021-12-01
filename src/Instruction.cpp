@@ -160,10 +160,13 @@ void Instruction::Parse()
     }
 }
 
-void Instruction::ImGuiLayer(bool top) const
+void Instruction::ImGuiLayer(bool top, bool showTop) const
 {
     ImGui::BeginChild("Instruction");
-    ImGui::Columns(7);
+    if (showTop)
+        ImGui::Columns(7);
+    else
+        ImGui::Columns(6);
     ImGui::Text(str.c_str(), "");
     ImGui::NextColumn();
     switch (type)
@@ -202,19 +205,35 @@ void Instruction::ImGuiLayer(bool top) const
         break;
     }
     ImGui::NextColumn();
-    ImGui::Text("%d", rs1);
-    ImGui::NextColumn();
-    ImGui::Text("%d", rs2);
-    ImGui::NextColumn();
-    ImGui::Text("%d", rd);
-    ImGui::NextColumn();
-    ImGui::Text("%d", imm);
-    ImGui::NextColumn();
-    if (top)
-        ImGui::Text("<-");
+    if (!m_Flushed)
+    {
+        ImGui::Text("%d", rs1);
+        ImGui::NextColumn();
+        ImGui::Text("%d", rs2);
+        ImGui::NextColumn();
+        ImGui::Text("%d", rd);
+        ImGui::NextColumn();
+        ImGui::Text("%d", imm);
+        ImGui::NextColumn();
+    }
     else
-        ImGui::Text(" ");
-
+    {
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+    }
+    if (showTop)
+    {
+        if (top)
+            ImGui::Text("<-");
+        else
+            ImGui::Text(" ");
+    }
     ImGui::Separator();
     ImGui::Columns(1);
     ImGui::EndChild();
@@ -234,4 +253,14 @@ void Instruction::Clean()
     issue = {false, 0};
     writeBack = {false, 0};
     m_CurrentCycle = 0;
+}
+
+void Instruction::MarkAsFlushed()
+{
+    m_Flushed = true;
+}
+
+bool Instruction::IsFlushed()
+{
+    return m_Flushed;
 }
