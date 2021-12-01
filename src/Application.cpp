@@ -151,19 +151,26 @@ void Application::SetupDockingSpace()
     int windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.f), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(m_Window->getSize().x, m_Window->getSize().y));
-    // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    // ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
     windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
     static bool flag = true;
     ImGui::Begin("Docking Space", &flag, windowFlags);
-    // ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
     ImGui::BeginMenuBar();
     LoadInstructionsFile();
+    if (ImGui::Button("Close Application"))
+    {
+        m_Window->close();
+    }
+    ImGui::Separator();
     ImGui::Text("PC: %d", m_Top + PC);
     ImGui::Separator();
     ImGui::Text("Cycle Number: %d", m_Controller->GetCycleNumber());
+    ImGui::Separator();
     ImGui::EndMenuBar();
     ImGui::DockSpace(ImGui::GetID("Docking Space"));
 }
@@ -408,9 +415,9 @@ void Application::RenderWindowImGuiLayer()
 
 void Application::LoadInstructionsFile()
 {
-    if (ImGui::Button("Load Instruction"))
+    if (ImGui::Button("Load Instructions"))
 
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "ChooseFile", ".txt", ".");
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".txt", ".");
     if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
@@ -419,7 +426,7 @@ void Application::LoadInstructionsFile()
             int err = LoadData(filePathName);
             if (err)
             {
-                std::cout << "Error file was not read correctly\n";
+                std::cerr << "Error file was not read correctly\n";
             }
         }
         ImGuiFileDialog::Instance()->Close();
