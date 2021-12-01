@@ -18,7 +18,9 @@ struct Instruction
     std::pair<bool, int32_t> issue, execute, writeBack;
     Stage currentStage = ISSUE;
     Instruction(const std::string &str, int PC);
-    void ImGuiLayer(bool top);
+    Instruction(Instruction &i2);
+    Instruction(const Instruction &i2);
+    void ImGuiLayer(bool top) const;
     inline void UpdateCycleCount()
     {
         m_MaxCycleNumber = s_CyclesCount[(int)(type)];

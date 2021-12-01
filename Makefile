@@ -10,7 +10,7 @@ LIBS= -lGL -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 IMGUI_OBJECTS_DIR= ./imguiObjects/
 IMGUI_OBJECTS= $(IMGUI_OBJECTS_DIR)imgui_demo.obj $(IMGUI_OBJECTS_DIR)imgui_draw.obj $(IMGUI_OBJECTS_DIR)imgui_tables.obj $(IMGUI_OBJECTS_DIR)imgui.obj $(IMGUI_OBJECTS_DIR)imgui-SFML.obj $(IMGUI_OBJECTS_DIR)imgui_widgets.obj 
 IMGUI_DIALOG_OBJECTS= $(IMGUI_OBJECTS_DIR)ImGuiFileDialog.obj 
-OBJECTS= main.obj ReservationStation.obj Application.obj Controller.obj Instruction.obj RegisterFile.obj
+OBJECTS= main.obj ReservationStation.obj Controller.obj Instruction.obj RegisterFile.obj Application.obj 
 INC= -I$(SFML_INC_DIR) -I$(IMGUI_INC_DIR) -I$(IMGUI_DIALOG_DIR) -I$(IMGUI_INC_DIR)imgui/
 CCFLAGS=-c $(INC)
 

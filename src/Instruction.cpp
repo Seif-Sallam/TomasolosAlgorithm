@@ -13,6 +13,41 @@ Instruction::Instruction(const std::string &str, int PC)
     m_CurrentCycle = 0;
     UpdateCycleCount();
 }
+Instruction::Instruction(Instruction &i2)
+    : str(i2.str), type(i2.type)
+{
+    // std::cout << "COPYING\n";
+    rs1 = i2.rs1;
+    rs2 = i2.rs2;
+    rd = i2.rd;
+    imm = i2.imm;
+    issue = i2.issue;
+    execute = i2.execute;
+    writeBack = i2.writeBack;
+    m_MaxCycleNumber = i2.m_MaxCycleNumber;
+    m_CurrentCycle = i2.m_CurrentCycle;
+    currentStage = Stage::ISSUE;
+    m_PC = i2.m_PC;
+    Parse();
+}
+
+Instruction::Instruction(const Instruction &i2)
+    : str(i2.str), type(i2.type)
+{
+    // std::cout << "COPYING CONST\n";
+    rs1 = i2.rs1;
+    rs2 = i2.rs2;
+    rd = i2.rd;
+    imm = i2.imm;
+    issue = i2.issue;
+    execute = i2.execute;
+    writeBack = i2.writeBack;
+    m_MaxCycleNumber = i2.m_MaxCycleNumber;
+    m_CurrentCycle = i2.m_CurrentCycle;
+    currentStage = Stage::ISSUE;
+    m_PC = i2.m_PC;
+    Parse();
+}
 
 void Instruction::Parse()
 {
@@ -125,7 +160,7 @@ void Instruction::Parse()
     }
 }
 
-void Instruction::ImGuiLayer(bool top)
+void Instruction::ImGuiLayer(bool top) const
 {
     ImGui::BeginChild("Instruction");
     ImGui::Columns(7);

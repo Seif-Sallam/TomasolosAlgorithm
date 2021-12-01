@@ -40,7 +40,7 @@ private:
     void MemoryImGuiLayer();
     void RegisterFileImGuiLayer();
     void RenderWindowImGuiLayer();
-    void InstructionsImGuiLayer();
+    void InstructionsImGuiLayer(const std::vector<Instruction> &instructions, bool Memory);
     void InstructionExecutationLayer();
 
     void Reset();
@@ -61,6 +61,7 @@ private:
     ImVec2 m_WindowSize;
 
     std::vector<Instruction> m_InstructionsQueue;
+    std::vector<Instruction> m_InstructionMemory;
     int m_Top;
     sf::Clock deltaClock;
     RegisterFile m_RegFile;

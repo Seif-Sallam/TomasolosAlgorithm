@@ -29,7 +29,7 @@ Application::Application()
     m_Stations.push_back(ReservationStation("NEG", &m_Top, Unit::NEG));
     m_Stations.push_back(ReservationStation("ABS", &m_Top, Unit::ABS));
     m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
-    m_Controller = new Controller(m_Top, m_InstructionsQueue, m_Stations, m_RegFile, m_Memory);
+    m_Controller = new Controller(m_Top, m_InstructionsQueue, m_InstructionMemory, m_Stations, m_RegFile, m_Memory);
 
     PC = 0;
 }
@@ -68,7 +68,8 @@ void Application::Update()
         MemoryImGuiLayer();
         RegisterFileImGuiLayer();
         RenderWindowImGuiLayer();
-        InstructionsImGuiLayer();
+        InstructionsImGuiLayer(m_InstructionMemory, true);
+        InstructionsImGuiLayer(m_InstructionsQueue, false);
         InstructionExecutationLayer();
     }
     ImGui::End(); // Docking space end
@@ -433,9 +434,13 @@ void Application::LoadInstructionsFile()
     }
 }
 
-void Application::InstructionsImGuiLayer()
+void Application::InstructionsImGuiLayer(const std::vector<Instruction> &instructions, bool Memory)
 {
-    ImGui::Begin("Instructions Queue");
+    std::string title = "Instructions Queue";
+    if (Memory)
+        title = "Instructions Memory";
+    ImGui::Begin(title.c_str());
+    ImGui::SetWindowSize(m_WindowSize);
     if (ImGui::IsWindowFocused())
     {
         m_ActiveWindow = Windows::Instructions;
@@ -462,9 +467,9 @@ void Application::InstructionsImGuiLayer()
         ImGui::Separator();
         ImGui::EndChild();
 
-        for (int i = 0; i < m_InstructionsQueue.size(); i++)
+        for (int i = 0; i < instructions.size(); i++)
         {
-            m_InstructionsQueue[i].ImGuiLayer(i == m_Top);
+            instructions[i].ImGuiLayer(i == m_Top);
         }
     }
     ImGui::EndChild();
@@ -527,6 +532,7 @@ int Application::LoadData(const std::string &inFileName)
         return 1;
 
     m_InstructionsQueue.clear();
+    m_InstructionMemory.clear();
     m_Top = 0;
     int i = 0;
     while (!inputFile.eof())
@@ -535,7 +541,7 @@ int Application::LoadData(const std::string &inFileName)
         std::getline(inputFile, instruction);
         if (instruction.size() > 3)
         {
-            m_InstructionsQueue.push_back(Instruction(instruction, i));
+            m_InstructionMemory.emplace_back(instruction, i);
             i++;
         }
     }
@@ -545,7 +551,8 @@ int Application::LoadData(const std::string &inFileName)
 
 void Application::Reset()
 {
-    m_Controller->GetCycleNumber() = 0;
+    m_Controller->GetCycleNumber() = -1;
+    m_InstructionsQueue.clear();
     m_Top = 0;
     for (int i = 0; i < m_InstructionsQueue.size(); i++)
     {

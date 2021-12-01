@@ -1,9 +1,11 @@
 #include "../headers/Controller.h"
 
-Controller::Controller(int &top, std::vector<Instruction> &instructionsQ, std::vector<ReservationStation> &stations, RegisterFile &regFile, std::map<uint16_t, int16_t> &memory)
-    : m_InstructionsQ(instructionsQ), m_Stations(stations), m_Top(top), m_RegFile(regFile), m_Memory(memory)
+Controller::Controller(int &top, std::vector<Instruction> &instructionsQ,
+                       std::vector<Instruction> &instructionMemory, std::vector<ReservationStation> &stations,
+                       RegisterFile &regFile, std::map<uint16_t, int16_t> &memory)
+    : m_InstructionsQ(instructionsQ), m_Stations(stations), m_Top(top), m_RegFile(regFile), m_Memory(memory), m_InstructionMemory(instructionMemory)
 {
-    m_CycleNumber = 0;
+    m_CycleNumber = -1;
     CDB.sourceStation = "N";
 }
 
@@ -19,21 +21,25 @@ void Controller::JumpToCycle(int cycle)
 
 void Controller::Advance()
 {
+    m_CycleNumber++;
+
     //Issuing the instructions
-    if (m_Top < m_InstructionsQ.size() && m_Top > -1)
+    if (m_Top < m_InstructionMemory.size() && m_Top > -1)
     {
         if (m_InstructionIssuing)
         {
-            Instruction &currentInst = m_InstructionsQ[m_Top];
-            Unit type = currentInst.type;
+            Unit type = m_InstructionMemory[m_Top].type;
             for (int i = 0; i < m_Stations.size(); i++)
             {
                 if (IsCorrectUnit(m_Stations[i].GetType(), type) && !m_Stations[i].IsBusy())
                 {
                     //We issue
+                    m_InstructionsQ.push_back(m_InstructionMemory[m_Top]);
+                    Instruction &currentInst = m_InstructionsQ.back();
                     m_Stations[i].FeedInstruction(&currentInst);
                     m_Stations[i].MarkBusy(true);
-                    currentInst.Clean();
+                    std::cout << "ADDING INSTRUCTION\n";
+                    std::cout << "i: " << i << ", STR: " << m_Stations[i].m_UnderWorkInstruction->str << std::endl;
                     currentInst.issue.first = true;
                     currentInst.issue.second = m_CycleNumber;
                     int32_t rs1, rs2, rd;
@@ -86,6 +92,16 @@ void Controller::Advance()
                         //We stop any instruction from issuing
                         m_InstructionIssuing = false;
                     }
+                    if (m_BranchFound == true)
+                    {
+                        m_AfterBranchInstructions.push_back(&currentInst);
+                    }
+                    if (currentInst.type == Unit::BEQ)
+                    {
+                        m_BranchFound = true;
+                        // m_BranchInstructions.push({currentInst.m_PC, &currentInst});
+                    }
+
                     break;
                 }
             }
@@ -99,43 +115,48 @@ void Controller::Advance()
         if (station.IsBusy()) // Has an instruction inside it
         {
             Instruction &underWorkInstruction = *station.m_UnderWorkInstruction;
-            int rs1, rs2;
-            rs1 = underWorkInstruction.rs1;
-            rs2 = underWorkInstruction.rs2;
-            //We are executing the instruction which we have just issued
-            if (underWorkInstruction.issue.second != m_CycleNumber)
-            { //Instruction was NOT already executed
-                if (underWorkInstruction.currentStage == Stage::EXECUTE)
-                {
-                    // Check if the operands are ready, then we initiate execuation
-                    if (OperandsReady(station))
+            std::cout << "i: " << i << "str: " << station.m_UnderWorkInstruction->str << std::endl;
+            // std::cout << "STR: " << underWorkInstruction.str << std::endl;
+            if (!AfterBranchInstruction(underWorkInstruction))
+            {
+                int rs1, rs2;
+                rs1 = underWorkInstruction.rs1;
+                rs2 = underWorkInstruction.rs2;
+                //We are executing the instruction which we have just issued
+                if (underWorkInstruction.issue.second != m_CycleNumber)
+                { //Instruction was NOT already executed
+                    if (underWorkInstruction.currentStage == Stage::EXECUTE)
                     {
-                        station.m_InitiateExecutation = true;
-                    }
-                    if (station.m_InitiateExecutation)
-                    {
-
-                        //If we are finished, then set that we executed the instruction and put its cycle number
-                        if (underWorkInstruction.Finished())
+                        // Check if the operands are ready, then we initiate execuation
+                        if (OperandsReady(station))
                         {
-                            underWorkInstruction.execute = {true, m_CycleNumber};
-                            underWorkInstruction.currentStage = Stage::WRITE_BACK;
+                            station.m_InitiateExecutation = true;
                         }
-                        else
+                        if (station.m_InitiateExecutation)
                         {
-                            underWorkInstruction.Advance();
 
-                            // Is it the first cycle? if yes compute the target or the address
-                            if (underWorkInstruction.m_CurrentCycle == 1 && (underWorkInstruction.type == Unit::SW || underWorkInstruction.type == Unit::LW))
+                            //If we are finished, then set that we executed the instruction and put its cycle number
+                            if (underWorkInstruction.Finished())
                             {
-                                station.A = underWorkInstruction.imm + station.Vj;
-                            }
-                            else if (underWorkInstruction.m_CurrentCycle == 1 && underWorkInstruction.type == Unit::BEQ)
-                            {
-                                station.A = underWorkInstruction.imm;
+                                underWorkInstruction.execute = {true, m_CycleNumber};
+                                underWorkInstruction.currentStage = Stage::WRITE_BACK;
                             }
                             else
-                                station.Execute(m_Memory);
+                            {
+                                underWorkInstruction.Advance();
+
+                                // Is it the first cycle? if yes compute the target or the address
+                                if (underWorkInstruction.m_CurrentCycle == 1 && (underWorkInstruction.type == Unit::SW || underWorkInstruction.type == Unit::LW))
+                                {
+                                    station.A = underWorkInstruction.imm + station.Vj;
+                                }
+                                else if (underWorkInstruction.m_CurrentCycle == 1 && underWorkInstruction.type == Unit::BEQ)
+                                {
+                                    station.A = underWorkInstruction.imm;
+                                }
+                                else
+                                    station.Execute(m_Memory);
+                            }
                         }
                     }
                 }
@@ -152,6 +173,8 @@ void Controller::Advance()
             int stationNumber = Q.front();
             auto &station = m_Stations[stationNumber];
             //We are ready to write back
+            std::cout << "i here: " << stationNumber << " str:" << station.m_UnderWorkInstruction->str << std::endl;
+
             if (station.m_UnderWorkInstruction->currentStage == Stage::WRITE_BACK && station.m_UnderWorkInstruction->execute.second != m_CycleNumber)
             {
                 Q.pop();
@@ -159,7 +182,8 @@ void Controller::Advance()
                 if (type != Unit::BEQ && type != Unit::SW && i != 0)
                 {
                     m_RegFile.m_RegisterValue[i] = station.result;
-                    m_RegFile.m_ProducingUnit[i] = "N";
+                    if (m_RegFile.m_ProducingUnit[i] == station.m_Name)
+                        m_RegFile.m_ProducingUnit[i] = "N";
                 }
                 else if (type == Unit::SW)
                 {
@@ -179,7 +203,21 @@ void Controller::Advance()
                         //Branch should be taken, we should flush the instructions after the branch and we change the PC
                         m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
                         //Flush?
+                        for (int i = 0; i < m_Stations.size(); i++)
+                        {
+                            if (m_Stations[i].IsBusy())
+                            {
+                                if (m_Stations[i].m_UnderWorkInstruction->m_PC > station.m_UnderWorkInstruction->m_PC)
+                                {
+                                    // m_Stations[i].m_UnderWorkInstruction->rd
+                                    // m_WriteBackQueues[]
+                                    m_Stations[i].Clean();
+                                }
+                            }
+                        }
                     }
+                    m_BranchFound = false;
+                    //m_AfterBranchInstructions.clear(); // This will not work in case of two branchs after each other and the first is not taken
                 }
                 if (type == Unit::JAL || type == Unit::JALR)
                 {
@@ -214,8 +252,6 @@ void Controller::Advance()
         }
         CDB.sourceStation = "N";
     }
-
-    m_CycleNumber++;
 }
 bool Controller::OperandsReady(ReservationStation &station)
 {
@@ -254,4 +290,15 @@ void Controller::Clean()
             m_WriteBackQueues[i].pop();
     }
     m_WriteBackRegistersAccess.clear();
+    m_AfterBranchInstructions.clear();
+    m_BranchFound = false;
+    m_InstructionIssuing = true;
+}
+
+bool Controller::AfterBranchInstruction(Instruction &inst)
+{
+    for (int i = 0; i < m_AfterBranchInstructions.size(); i++)
+        if (inst.m_PC == m_AfterBranchInstructions[i]->m_PC)
+            return true;
+    return false;
 }
