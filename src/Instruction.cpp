@@ -205,14 +205,28 @@ void Instruction::ImGuiLayer(bool top, bool showTop) const
         break;
     }
     ImGui::NextColumn();
-    ImGui::Text("%d", rs1);
-    ImGui::NextColumn();
-    ImGui::Text("%d", rs2);
-    ImGui::NextColumn();
-    ImGui::Text("%d", rd);
-    ImGui::NextColumn();
-    ImGui::Text("%d", imm);
-    ImGui::NextColumn();
+    if (!m_Flushed)
+    {
+        ImGui::Text("%d", rs1);
+        ImGui::NextColumn();
+        ImGui::Text("%d", rs2);
+        ImGui::NextColumn();
+        ImGui::Text("%d", rd);
+        ImGui::NextColumn();
+        ImGui::Text("%d", imm);
+        ImGui::NextColumn();
+    }
+    else
+    {
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted("FLUSHED");
+        ImGui::NextColumn();
+    }
     if (showTop)
     {
         if (top)
@@ -239,4 +253,14 @@ void Instruction::Clean()
     issue = {false, 0};
     writeBack = {false, 0};
     m_CurrentCycle = 0;
+}
+
+void Instruction::MarkAsFlushed()
+{
+    m_Flushed = true;
+}
+
+bool Instruction::IsFlushed()
+{
+    return m_Flushed;
 }

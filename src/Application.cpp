@@ -536,22 +536,35 @@ void Application::InstructionExecutationLayer()
             {
                 ImGui::Text(m_InstructionsQueue[i].str.c_str(), "");
                 ImGui::NextColumn();
-                if (m_InstructionsQueue[i].issue.first)
-                    ImGui::Text("Y(%d)", m_InstructionsQueue[i].issue.second);
+                if (!m_InstructionsQueue[i].IsFlushed())
+                    if (m_InstructionsQueue[i].issue.first)
+                        ImGui::Text("Y(%d)", m_InstructionsQueue[i].issue.second);
+                    else
+                        ImGui::Text("N");
                 else
-                    ImGui::Text("N");
-
+                {
+                    ImGui::TextUnformatted("FLUSHED");
+                }
                 ImGui::NextColumn();
-                if (m_InstructionsQueue[i].execute.first)
-                    ImGui::Text("Y(%d)", m_InstructionsQueue[i].execute.second);
+                if (!m_InstructionsQueue[i].IsFlushed())
+                    if (m_InstructionsQueue[i].execute.first)
+                        ImGui::Text("Y(%d)", m_InstructionsQueue[i].execute.second);
+                    else
+                        ImGui::Text("N");
                 else
-                    ImGui::Text("N");
-
+                {
+                    ImGui::TextUnformatted("FLUSHED");
+                }
                 ImGui::NextColumn();
-                if (m_InstructionsQueue[i].writeBack.first)
-                    ImGui::Text("Y(%d)", m_InstructionsQueue[i].writeBack.second);
+                if (!m_InstructionsQueue[i].IsFlushed())
+                    if (m_InstructionsQueue[i].writeBack.first)
+                        ImGui::Text("Y(%d)", m_InstructionsQueue[i].writeBack.second);
+                    else
+                        ImGui::Text("N");
                 else
-                    ImGui::Text("N");
+                {
+                    ImGui::TextUnformatted("FLUSHED");
+                }
                 ImGui::NextColumn();
                 ImGui::Separator();
             }

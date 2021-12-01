@@ -23,6 +23,72 @@ void Controller::Advance()
 {
     m_CycleNumber++;
     //Issuing the instructions
+    IssueInstructions();
+    m_RegFile.m_ProducingUnit[0] = "N";
+    m_RegFile.m_RegisterValue[0] = 0;
+    //Executing instructions
+    ExecuteInstructions();
+    m_RegFile.m_ProducingUnit[0] = "N";
+    m_RegFile.m_RegisterValue[0] = 0;
+    //Writing back
+    WriteBackInstructions();
+    m_RegFile.m_ProducingUnit[0] = "N";
+    m_RegFile.m_RegisterValue[0] = 0;
+
+    //Common Data Bus
+    CommonDataBusWork();
+}
+bool Controller::OperandsReady(ReservationStation &station)
+{
+    auto type = station.GetType();
+    bool flag = true;
+    if (type == Unit::LW || type == Unit::SW || type == Unit::ADDI ||
+        type == Unit::BEQ || type == Unit::ADD ||
+        type == Unit::JALR || type == Unit::NEG ||
+        type == Unit::ABS || type == Unit::DIV)
+    {
+        flag = station.Qj == "N";
+    }
+    if (type == Unit::SW || type == Unit::BEQ ||
+        type == Unit::ADD || type == Unit::DIV)
+    {
+        flag = flag && station.Qk == "N";
+    }
+    return flag;
+}
+
+bool Controller::IsCorrectUnit(Unit stationType, Unit instructionType)
+{
+    if (stationType == Unit::ADD && instructionType == Unit::ADDI)
+        return true;
+    if (stationType == Unit::JAL && instructionType == Unit::JALR)
+        return true;
+
+    return stationType == instructionType;
+}
+
+void Controller::Clean()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        m_WriteBackQueues[i].clear();
+    }
+    m_WriteBackRegistersAccess.clear();
+    m_AfterBranchInstructions.clear();
+    m_BranchFound = false;
+    m_InstructionIssuing = true;
+}
+
+bool Controller::AfterBranchInstruction(Instruction &inst)
+{
+    for (int i = 0; i < m_AfterBranchInstructions.size(); i++)
+        if (inst.m_PC == m_AfterBranchInstructions[i].second->m_PC)
+            return true;
+    return false;
+}
+
+void Controller::IssueInstructions()
+{
     if (m_Top < m_InstructionMemory.size() && m_Top > -1)
     {
         if (m_InstructionIssuing)
@@ -37,6 +103,7 @@ void Controller::Advance()
                     Instruction &currentInst = m_InstructionsQ.back();
                     m_Stations[i].FeedInstruction(&currentInst);
                     m_Stations[i].MarkBusy(true);
+                    currentInst.stationNumber = i;
                     currentInst.issue.first = true;
                     currentInst.issue.second = m_CycleNumber;
                     int32_t rs1, rs2, rd;
@@ -74,13 +141,10 @@ void Controller::Advance()
 
                     if (type != Unit::SW && type != Unit::BEQ)
                     {
-                        if (rd != 0)
-                            m_RegFile.m_ProducingUnit[rd] = m_Stations[i].m_Name;
-                        else
-                            m_RegFile.m_ProducingUnit[rd] = "N";
+                        m_RegFile.m_ProducingUnit[rd] = m_Stations[i].m_Name;
                     }
                     m_WriteBackRegistersAccess.push_back(rd);
-                    m_WriteBackQueues[rd].push(i);
+                    m_WriteBackQueues[rd].push_back({i, currentInst.m_PC});
                     m_Stations[i].m_InitiateExecutation = false;
                     currentInst.currentStage = Stage::EXECUTE;
                     m_Top++;
@@ -91,20 +155,22 @@ void Controller::Advance()
                     }
                     if (m_BranchFound == true)
                     {
-                        m_AfterBranchInstructions.push_back(&currentInst);
+                        m_AfterBranchInstructions.push_back({m_InstructionsQ.size() - 1, &currentInst});
                     }
                     if (currentInst.type == Unit::BEQ)
                     {
                         m_BranchFound = true;
-                        // m_BranchInstructions.push({currentInst.m_PC, &currentInst});
+                        m_BranchInstructions.push(&currentInst);
                     }
                     break;
                 }
             }
         }
     }
+}
 
-    //Executing instructions
+void Controller::ExecuteInstructions()
+{
     for (int i = 0; i < m_Stations.size(); i++)
     {
         ReservationStation &station = m_Stations[i];
@@ -158,22 +224,24 @@ void Controller::Advance()
             }
         }
     }
-    // //Writing Back
+}
+
+void Controller::WriteBackInstructions()
+{
     if (m_WriteBackRegistersAccess.size() >= 1)
     {
         int i = m_WriteBackRegistersAccess[0];
         auto &Q = m_WriteBackQueues[i];
         if (!Q.empty())
         {
-            int stationNumber = Q.front();
+            int stationNumber = Q[0].first;
             auto &station = m_Stations[stationNumber];
             // //We are ready to write back
-
             if (station.m_UnderWorkInstruction->currentStage == Stage::WRITE_BACK && station.m_UnderWorkInstruction->execute.second != m_CycleNumber)
             {
-                Q.pop();
+                Q.erase(Q.begin());
                 auto type = station.m_UnderWorkInstruction->type;
-                if (type != Unit::BEQ && type != Unit::SW && i != 0)
+                if (type != Unit::BEQ && type != Unit::SW)
                 {
                     m_RegFile.m_RegisterValue[i] = station.result;
                     if (m_RegFile.m_ProducingUnit[i] == station.m_Name)
@@ -197,36 +265,94 @@ void Controller::Advance()
                         //Branch should be taken, we should flush the instructions after the branch and we change the PC
                         m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
                         //Flush?
-                        for (int i = 0; i < m_Stations.size(); i++)
+                        Instruction *branchInst = m_BranchInstructions.front();
+                        m_BranchInstructions.pop();
+                        //Clean those instruction from the write back queues
+                        while (!m_BranchInstructions.empty() && m_BranchInstructions.front()->m_PC > branchInst->m_PC)
                         {
-                            if (m_Stations[i].IsBusy())
+                            m_BranchInstructions.front()->MarkAsFlushed();
+                            m_Stations[m_BranchInstructions.front()->stationNumber].Clean();
+                            m_BranchInstructions.pop();
+                        }
+                        for (int index = 1; index < 8; index++)
+                        {
+                            auto &vec = m_WriteBackQueues[index];
+                            for (int j = 0; j < vec.size(); j++)
                             {
-                                if (m_Stations[i].m_UnderWorkInstruction->m_PC > station.m_UnderWorkInstruction->m_PC)
+                                auto &station = m_Stations[m_WriteBackQueues[index][j].first];
+                                auto &inst = station.m_UnderWorkInstruction;
+                                if (inst->m_PC > branchInst->m_PC)
                                 {
-                                    // m_Stations[i].m_UnderWorkInstruction->rd
-                                    // m_WriteBackQueues[]
-                                    m_Stations[i].Clean();
+                                    if (station.m_Name == m_RegFile.m_ProducingUnit[index])
+                                        m_RegFile.m_ProducingUnit[index] = "N";
+                                    inst->MarkAsFlushed();
+                                    m_WriteBackQueues[index].erase(m_WriteBackQueues[index].begin() + j);
+                                    station.Clean();
+                                    j--;
+                                }
+                            }
+                        }
+                        for (int r = 0; r < m_WriteBackRegistersAccess.size(); r++)
+                        {
+                            int number = m_WriteBackRegistersAccess[r];
+                            if (m_WriteBackQueues[number].empty())
+                            {
+                                m_WriteBackRegistersAccess.erase(m_WriteBackRegistersAccess.begin() + r);
+                                r--;
+                            }
+                            else
+                            {
+                                auto &vec = m_WriteBackQueues[number];
+                                for (int s = 0; s < vec.size(); s++)
+                                {
+                                    auto &st = m_Stations[vec[s].first];
+                                    if (st.m_UnderWorkInstruction->m_PC > branchInst->m_PC)
+                                    {
+                                        vec.erase(vec.begin() + s);
+                                        s--;
+                                    }
+                                }
+                            }
+                        }
+                        //This is for the ADD R0 R0 R0 INSTRUCTIONS
+                        for (int v = 0; v < m_Stations.size(); v++)
+                        {
+                            if (m_Stations[v].IsBusy())
+                            {
+                                if (m_Stations[v].m_UnderWorkInstruction->m_PC > branchInst->m_PC)
+                                {
+                                    m_Stations[v].m_UnderWorkInstruction->MarkAsFlushed();
+                                    m_Stations[v].Clean();
                                 }
                             }
                         }
                     }
-                    m_BranchFound = false;
-                    //m_AfterBranchInstructions.clear(); // This will not work in case of two branchs after each other and the first is not taken
+                    m_BranchFound = !m_BranchInstructions.empty();
+                    if (!m_BranchFound)
+                        m_AfterBranchInstructions.clear();
                 }
                 if (type == Unit::JAL || type == Unit::JALR)
                 {
                     m_InstructionIssuing = true; // we jumped and now we want to get back to work
                 }
                 CDB.sourceStation = station.m_Name;
-                CDB.value = station.result;
+                if (i == 0)
+                    CDB.value = 0;
+                else
+                    CDB.value = station.result;
 
                 station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
                 station.Clean();
-                m_WriteBackRegistersAccess.erase(m_WriteBackRegistersAccess.begin());
+                if (!m_WriteBackRegistersAccess.empty())
+                    m_WriteBackRegistersAccess.erase(m_WriteBackRegistersAccess.begin());
+                // std::cout << "HERE\n";
             }
         }
     }
-    //Common Data Bus
+}
+
+void Controller::CommonDataBusWork()
+{
     if (CDB.sourceStation != "N")
     {
         for (int i = 0; i < m_Stations.size(); i++)
@@ -245,53 +371,4 @@ void Controller::Advance()
         }
         CDB.sourceStation = "N";
     }
-}
-bool Controller::OperandsReady(ReservationStation &station)
-{
-    auto type = station.GetType();
-    bool flag = true;
-    if (type == Unit::LW || type == Unit::SW || type == Unit::ADDI ||
-        type == Unit::BEQ || type == Unit::ADD ||
-        type == Unit::JALR || type == Unit::NEG ||
-        type == Unit::ABS || type == Unit::DIV)
-    {
-        flag = station.Qj == "N";
-    }
-    if (type == Unit::SW || type == Unit::BEQ ||
-        type == Unit::ADD || type == Unit::DIV)
-    {
-        flag = flag && station.Qk == "N";
-    }
-    return flag;
-}
-
-bool Controller::IsCorrectUnit(Unit stationType, Unit instructionType)
-{
-    if (stationType == Unit::ADD && instructionType == Unit::ADDI)
-        return true;
-    if (stationType == Unit::JAL && instructionType == Unit::JALR)
-        return true;
-
-    return stationType == instructionType;
-}
-
-void Controller::Clean()
-{
-    for (int i = 0; i < 8; i++)
-    {
-        while (!m_WriteBackQueues[i].empty())
-            m_WriteBackQueues[i].pop();
-    }
-    m_WriteBackRegistersAccess.clear();
-    m_AfterBranchInstructions.clear();
-    m_BranchFound = false;
-    m_InstructionIssuing = true;
-}
-
-bool Controller::AfterBranchInstruction(Instruction &inst)
-{
-    for (int i = 0; i < m_AfterBranchInstructions.size(); i++)
-        if (inst.m_PC == m_AfterBranchInstructions[i]->m_PC)
-            return true;
-    return false;
 }
