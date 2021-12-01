@@ -169,10 +169,17 @@ void Application::SetupDockingSpace()
         m_Window->close();
     }
     ImGui::Separator();
+    ImGui::TextUnformatted("Custom Starting PC Value:");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(45.0f);
+    ImGui::InputInt("", &PC, 0, 0, ImGuiInputTextFlags_AlwaysOverwrite | ImGuiInputTextFlags_CharsDecimal);
+    ImGui::PopItemWidth();
+    ImGui::Separator();
     ImGui::Text("PC: %d", m_Top + PC);
     ImGui::Separator();
     ImGui::Text("Cycle Number: %d", m_Controller->GetCycleNumber());
     ImGui::Separator();
+
     ImGui::EndMenuBar();
     ImGui::DockSpace(ImGui::GetID("Docking Space"));
 }
