@@ -180,6 +180,7 @@ void Application::SetupDockingSpace()
 void Application::ReservationStationsLayer()
 {
     ImGui::Begin("Reservation Stations");
+    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::ReservationStations;
     const char *items[] = {"LW", "SW", "BEQ", "JAL/JALR", "ADD/ADDI", "NEG", "ABS", "DIV"};
@@ -289,6 +290,7 @@ void Application::ReservationStationsLayer()
 void Application::MemoryImGuiLayer()
 {
     ImGui::Begin("Memory");
+    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::Memory;
 
@@ -335,6 +337,7 @@ void Application::MemoryImGuiLayer()
 void Application::RegisterFileImGuiLayer()
 {
     ImGui::Begin("Register File");
+    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::RegisterFile;
     ImGui::Columns(3, "Table");
@@ -439,7 +442,7 @@ void Application::InstructionsMemoryImGuiLayer()
 {
 
     ImGui::Begin("Instructions Memory");
-    ImGui::SetWindowSize(m_WindowSize);
+    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
     {
         m_ActiveWindow = Windows::Instructions;
@@ -478,7 +481,7 @@ void Application::InstructionsMemoryImGuiLayer()
 void Application::InstructionsQueueImGuiLayer()
 {
     ImGui::Begin("Instructions Queue");
-    ImGui::SetWindowSize(m_WindowSize);
+    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
     {
         m_ActiveWindow = Windows::Instructions;
