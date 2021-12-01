@@ -40,7 +40,8 @@ private:
     void MemoryImGuiLayer();
     void RegisterFileImGuiLayer();
     void RenderWindowImGuiLayer();
-    void InstructionsImGuiLayer(const std::vector<Instruction> &instructions, bool Memory);
+    void InstructionsMemoryImGuiLayer();
+    void InstructionsQueueImGuiLayer();
     void InstructionExecutationLayer();
 
     void Reset();

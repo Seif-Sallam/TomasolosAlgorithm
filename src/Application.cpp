@@ -29,6 +29,7 @@ Application::Application()
     m_Stations.push_back(ReservationStation("NEG", &m_Top, Unit::NEG));
     m_Stations.push_back(ReservationStation("ABS", &m_Top, Unit::ABS));
     m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
+    m_InstructionsQueue.reserve(3000);
     m_Controller = new Controller(m_Top, m_InstructionsQueue, m_InstructionMemory, m_Stations, m_RegFile, m_Memory);
 
     PC = 0;
@@ -68,8 +69,8 @@ void Application::Update()
         MemoryImGuiLayer();
         RegisterFileImGuiLayer();
         RenderWindowImGuiLayer();
-        InstructionsImGuiLayer(m_InstructionMemory, true);
-        InstructionsImGuiLayer(m_InstructionsQueue, false);
+        InstructionsMemoryImGuiLayer();
+        InstructionsQueueImGuiLayer();
         InstructionExecutationLayer();
     }
     ImGui::End(); // Docking space end
@@ -434,12 +435,10 @@ void Application::LoadInstructionsFile()
     }
 }
 
-void Application::InstructionsImGuiLayer(const std::vector<Instruction> &instructions, bool Memory)
+void Application::InstructionsMemoryImGuiLayer()
 {
-    std::string title = "Instructions Queue";
-    if (Memory)
-        title = "Instructions Memory";
-    ImGui::Begin(title.c_str());
+
+    ImGui::Begin("Instructions Memory");
     ImGui::SetWindowSize(m_WindowSize);
     if (ImGui::IsWindowFocused())
     {
@@ -467,9 +466,46 @@ void Application::InstructionsImGuiLayer(const std::vector<Instruction> &instruc
         ImGui::Separator();
         ImGui::EndChild();
 
-        for (int i = 0; i < instructions.size(); i++)
+        for (int i = 0; i < m_InstructionMemory.size(); i++)
         {
-            instructions[i].ImGuiLayer(i == m_Top);
+            m_InstructionMemory[i].ImGuiLayer(i == m_Top, true);
+        }
+    }
+    ImGui::EndChild();
+    ImGui::End();
+}
+
+void Application::InstructionsQueueImGuiLayer()
+{
+    ImGui::Begin("Instructions Queue");
+    ImGui::SetWindowSize(m_WindowSize);
+    if (ImGui::IsWindowFocused())
+    {
+        m_ActiveWindow = Windows::Instructions;
+    }
+    ImGui::BeginChild("InstructionTable");
+    ImGui::BeginChild("Instruction");
+    {
+        ImGui::Separator();
+        ImGui::Columns(6);
+        ImGui::Text("Instruction");
+        ImGui::NextColumn();
+        ImGui::Text("Type");
+        ImGui::NextColumn();
+        ImGui::Text("Rs1");
+        ImGui::NextColumn();
+        ImGui::Text("Rs2");
+        ImGui::NextColumn();
+        ImGui::Text("Rd");
+        ImGui::NextColumn();
+        ImGui::Text("Imm");
+        ImGui::NextColumn();
+        ImGui::Separator();
+        ImGui::EndChild();
+
+        for (int i = 0; i < m_InstructionsQueue.size(); i++)
+        {
+            m_InstructionsQueue[i].ImGuiLayer(0, false);
         }
     }
     ImGui::EndChild();
@@ -552,12 +588,9 @@ int Application::LoadData(const std::string &inFileName)
 void Application::Reset()
 {
     m_Controller->GetCycleNumber() = -1;
-    m_InstructionsQueue.clear();
     m_Top = 0;
-    for (int i = 0; i < m_InstructionsQueue.size(); i++)
-    {
-        m_InstructionsQueue[i].Clean();
-    }
+    m_InstructionsQueue.clear();
+    m_InstructionsQueue.reserve(3000);
     for (int i = 0; i < m_Stations.size(); i++)
     {
         m_Stations[i].Clean();

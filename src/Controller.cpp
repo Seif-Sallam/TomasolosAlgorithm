@@ -22,7 +22,6 @@ void Controller::JumpToCycle(int cycle)
 void Controller::Advance()
 {
     m_CycleNumber++;
-
     //Issuing the instructions
     if (m_Top < m_InstructionMemory.size() && m_Top > -1)
     {
@@ -38,8 +37,6 @@ void Controller::Advance()
                     Instruction &currentInst = m_InstructionsQ.back();
                     m_Stations[i].FeedInstruction(&currentInst);
                     m_Stations[i].MarkBusy(true);
-                    std::cout << "ADDING INSTRUCTION\n";
-                    std::cout << "i: " << i << ", STR: " << m_Stations[i].m_UnderWorkInstruction->str << std::endl;
                     currentInst.issue.first = true;
                     currentInst.issue.second = m_CycleNumber;
                     int32_t rs1, rs2, rd;
@@ -101,7 +98,6 @@ void Controller::Advance()
                         m_BranchFound = true;
                         // m_BranchInstructions.push({currentInst.m_PC, &currentInst});
                     }
-
                     break;
                 }
             }
@@ -115,8 +111,7 @@ void Controller::Advance()
         if (station.IsBusy()) // Has an instruction inside it
         {
             Instruction &underWorkInstruction = *station.m_UnderWorkInstruction;
-            std::cout << "i: " << i << "str: " << station.m_UnderWorkInstruction->str << std::endl;
-            // std::cout << "STR: " << underWorkInstruction.str << std::endl;
+
             if (!AfterBranchInstruction(underWorkInstruction))
             {
                 int rs1, rs2;
@@ -172,8 +167,7 @@ void Controller::Advance()
         {
             int stationNumber = Q.front();
             auto &station = m_Stations[stationNumber];
-            //We are ready to write back
-            std::cout << "i here: " << stationNumber << " str:" << station.m_UnderWorkInstruction->str << std::endl;
+            // //We are ready to write back
 
             if (station.m_UnderWorkInstruction->currentStage == Stage::WRITE_BACK && station.m_UnderWorkInstruction->execute.second != m_CycleNumber)
             {
@@ -232,7 +226,6 @@ void Controller::Advance()
             }
         }
     }
-
     //Common Data Bus
     if (CDB.sourceStation != "N")
     {

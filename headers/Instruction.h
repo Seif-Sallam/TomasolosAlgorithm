@@ -20,7 +20,7 @@ struct Instruction
     Instruction(const std::string &str, int PC);
     Instruction(Instruction &i2);
     Instruction(const Instruction &i2);
-    void ImGuiLayer(bool top) const;
+    void ImGuiLayer(bool top, bool showTop) const;
     inline void UpdateCycleCount()
     {
         m_MaxCycleNumber = s_CyclesCount[(int)(type)];
