@@ -14,7 +14,11 @@ OBJECTS= main.obj ReservationStation.obj Controller.obj Instruction.obj Register
 INC= -I$(SFML_INC_DIR) -I$(IMGUI_INC_DIR) -I$(IMGUI_DIALOG_DIR) -I$(IMGUI_INC_DIR)imgui/
 CCFLAGS=-c $(INC)
 
-all: Proj.out
+all: | Dir Proj.out 
+
+Dir:
+	mkdir -p $(IMGUI_OBJECTS_DIR)
+	
 
 Proj.out: $(OBJECTS) $(IMGUI_OBJECTS)  $(IMGUI_DIALOG_OBJECTS)
 	$(CC) $(OBJECTS) $(IMGUI_OBJECTS) $(IMGUI_DIALOG_OBJECTS) -o Proj.out -L$(LIB_DIR) $(LIBS)
