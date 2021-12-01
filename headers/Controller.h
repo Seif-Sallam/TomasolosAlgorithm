@@ -34,4 +34,5 @@ private:
         int16_t value;
     };
     CommonDataBus CDB;
+    bool m_InstructionIssuing = true;
 };
