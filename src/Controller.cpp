@@ -104,6 +104,7 @@ void Controller::IssueInstructions()
                     m_Stations[i].FeedInstruction(&currentInst);
                     m_Stations[i].MarkBusy(true);
                     currentInst.stationNumber = i;
+                    currentInst.stationNumber = i;
                     currentInst.issue.first = true;
                     currentInst.issue.second = m_CycleNumber;
                     int32_t rs1, rs2, rd;
