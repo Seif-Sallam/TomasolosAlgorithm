@@ -103,7 +103,10 @@ void Controller::IssueInstructions()
                     Instruction &currentInst = m_InstructionsQ.back();
                     m_Stations[i].FeedInstruction(&currentInst);
                     m_Stations[i].MarkBusy(true);
+<<<<<<< HEAD
                     currentInst.stationNumber = i;
+=======
+>>>>>>> d04a6580421f789fa34033ddf60992f46a0a7bde
                     currentInst.issue.first = true;
                     currentInst.issue.second = m_CycleNumber;
                     int32_t rs1, rs2, rd;
@@ -237,6 +240,10 @@ void Controller::WriteBackInstructions()
             int stationNumber = Q[0].first;
             auto &station = m_Stations[stationNumber];
             // //We are ready to write back
+<<<<<<< HEAD
+=======
+
+>>>>>>> d04a6580421f789fa34033ddf60992f46a0a7bde
             if (station.m_UnderWorkInstruction->currentStage == Stage::WRITE_BACK && station.m_UnderWorkInstruction->execute.second != m_CycleNumber)
             {
                 Q.erase(Q.begin());
@@ -349,10 +356,14 @@ void Controller::WriteBackInstructions()
             }
         }
     }
+<<<<<<< HEAD
 }
 
 void Controller::CommonDataBusWork()
 {
+=======
+    //Common Data Bus
+>>>>>>> d04a6580421f789fa34033ddf60992f46a0a7bde
     if (CDB.sourceStation != "N")
     {
         for (int i = 0; i < m_Stations.size(); i++)
