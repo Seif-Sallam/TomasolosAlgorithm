@@ -439,7 +439,9 @@ void Application::InstructionsMemoryImGuiLayer()
     ImGui::BeginChild("Instruction");
     {
         ImGui::Separator();
-        ImGui::Columns(7);
+        ImGui::Columns(8);
+        ImGui::Text("Index");
+        ImGui::NextColumn();
         ImGui::Text("Instruction");
         ImGui::NextColumn();
         ImGui::Text("Type");
@@ -456,10 +458,10 @@ void Application::InstructionsMemoryImGuiLayer()
         ImGui::Columns(1);
         ImGui::Separator();
         ImGui::EndChild();
-
+        int32_t pcValue = this->PC;
         for (int i = 0; i < m_InstructionMemory.size(); i++)
         {
-            m_InstructionMemory[i].ImGuiLayer(i == m_Top, true);
+            m_InstructionMemory[i].ImGuiLayer(pcValue++, i == m_Top, true);
         }
     }
     ImGui::EndChild();
@@ -475,10 +477,16 @@ void Application::InstructionsQueueImGuiLayer()
         m_ActiveWindow = Windows::Instructions;
     }
     ImGui::BeginChild("InstructionTable");
-    ImGui::BeginChild("Instruction");
+
     {
+        ImGui::BeginChild("Instruction");
+
         ImGui::Separator();
-        ImGui::Columns(6);
+        ImGui::Columns(7);
+        ImGui::PushItemWidth(20.0f);
+        ImGui::Text("PC");
+        ImGui::PopItemWidth();
+        ImGui::NextColumn();
         ImGui::Text("Instruction");
         ImGui::NextColumn();
         ImGui::Text("Type");
@@ -492,11 +500,11 @@ void Application::InstructionsQueueImGuiLayer()
         ImGui::Text("Imm");
         ImGui::NextColumn();
         ImGui::Separator();
+        int32_t pcValue = this->PC;
         ImGui::EndChild();
-
         for (int i = 0; i < m_InstructionsQueue.size(); i++)
         {
-            m_InstructionsQueue[i].ImGuiLayer(0, false);
+            m_InstructionsQueue[i].ImGuiLayer(pcValue++, 0, false);
         }
     }
     ImGui::EndChild();

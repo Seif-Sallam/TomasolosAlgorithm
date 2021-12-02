@@ -22,7 +22,7 @@ struct Instruction
     Instruction(const std::string &str, int PC);
     Instruction(Instruction &i2);
     Instruction(const Instruction &i2);
-    void ImGuiLayer(bool top, bool showTop) const;
+    void ImGuiLayer(int PC, bool top, bool showTop) const;
     void MarkAsFlushed();
     bool IsFlushed();
     inline void UpdateCycleCount()

@@ -160,13 +160,17 @@ void Instruction::Parse()
     }
 }
 
-void Instruction::ImGuiLayer(bool top, bool showTop) const
+void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
 {
     ImGui::BeginChild("Instruction");
     if (showTop)
-        ImGui::Columns(7);
+        ImGui::Columns(8);
     else
-        ImGui::Columns(6);
+        ImGui::Columns(7);
+    ImGui::PushItemWidth(20.0f);
+    ImGui::Text("%d", pc);
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
     ImGui::Text(str.c_str(), "");
     ImGui::NextColumn();
     switch (type)
