@@ -527,7 +527,7 @@ void Application::InstructionExecutationLayer()
             ImGui::NextColumn();
             ImGui::Text("Executation Start");
             ImGui::NextColumn();
-            ImGui::Text("Execute");
+            ImGui::Text("Executetion End");
             ImGui::NextColumn();
             ImGui::Text("WriteBack");
             ImGui::NextColumn();

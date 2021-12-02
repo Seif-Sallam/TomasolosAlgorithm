@@ -25,7 +25,7 @@ public:
 private:
     std::string m_Name;
     Unit m_Type;
-    int16_t Vj, Vk, A;
+    int16_t Vj, Vk, A = -1;
     std::string Qj, Qk;
     int *m_Top;
     bool m_IsBusy;

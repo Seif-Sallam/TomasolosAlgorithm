@@ -55,6 +55,12 @@ bool Controller::OperandsReady(ReservationStation &station)
     {
         flag = flag && station.Qk == "N";
     }
+
+    if (type == Unit::SW || type == Unit::LW)
+    {
+        //Check that the address computed is not The same as the others
+    }
+
     return flag;
 }
 
@@ -189,17 +195,29 @@ void Controller::ExecuteInstructions()
                 if (underWorkInstruction.issue.second != m_CycleNumber)
                 {
                     //Instruction was NOT already executed
-
                     if (underWorkInstruction.currentStage == Stage::EXECUTE)
                     {
+                        bool dep = false;
+                        if (station.m_Type == Unit::SW || station.m_Type == Unit::LW)
+                        {
+                            station.A = underWorkInstruction.imm + station.Vj;
+                            dep = CheckDependancy(station.A, i, underWorkInstruction.m_PC);
+                            std::cout << "Station Name: " << station.m_Name << ", is dep: " << ((dep) ? "true " : "false") << std::endl;
+                            if (underWorkInstruction.m_CurrentCycle == 0)
+                                underWorkInstruction.Advance();
+                        }
                         // Check if the operands are ready, then we initiate execuation
-                        if (OperandsReady(station))
+                        if (OperandsReady(station) && !dep)
                         {
                             station.m_InitiateExecutation = true;
                         }
                         if (station.m_InitiateExecutation)
                         {
                             if (underWorkInstruction.m_CurrentCycle == 0)
+                            {
+                                underWorkInstruction.startExecute = {true, m_CycleNumber};
+                            }
+                            if ((underWorkInstruction.type == Unit::LW || underWorkInstruction.type == Unit::SW) && underWorkInstruction.m_CurrentCycle == 1)
                             {
                                 underWorkInstruction.startExecute = {true, m_CycleNumber};
                             }
@@ -211,14 +229,10 @@ void Controller::ExecuteInstructions()
                             }
                             else
                             {
-                                underWorkInstruction.Advance();
 
+                                underWorkInstruction.Advance();
                                 // Is it the first cycle? if yes compute the target or the address
-                                if (underWorkInstruction.m_CurrentCycle == 1 && (underWorkInstruction.type == Unit::SW || underWorkInstruction.type == Unit::LW))
-                                {
-                                    station.A = underWorkInstruction.imm + station.Vj;
-                                }
-                                else if (underWorkInstruction.m_CurrentCycle == 1 && underWorkInstruction.type == Unit::BEQ)
+                                if (underWorkInstruction.m_CurrentCycle == 1 && underWorkInstruction.type == Unit::BEQ)
                                 {
                                     station.A = underWorkInstruction.imm;
                                 }
@@ -378,4 +392,22 @@ void Controller::CommonDataBusWork()
         }
         CDB.sourceStation = "N";
     }
+}
+
+bool Controller::CheckDependancy(int32_t addr, int32_t stationNumber, int32_t PC)
+{
+    for (int i = 0; i < m_Stations.size(); i++)
+    {
+        if (m_Stations[i].IsBusy() && (m_Stations[i].GetType() == Unit::SW || m_Stations[i].GetType() == Unit::LW))
+            if (stationNumber != i) // we are not at the same station
+            {
+                auto &station = m_Stations[i];
+                if (station.A == addr)
+                {
+                    if (station.m_UnderWorkInstruction->m_PC < PC)
+                        return true;
+                }
+            }
+    }
+    return false;
 }

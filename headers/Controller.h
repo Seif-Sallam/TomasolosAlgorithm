@@ -25,6 +25,7 @@ private:
     void ExecuteInstructions();
     void WriteBackInstructions();
     void CommonDataBusWork();
+    bool CheckDependancy(int32_t addr, int32_t stationNumber, int32_t PC);
 
     int32_t m_CycleNumber;
     std::vector<ReservationStation> &m_Stations;
