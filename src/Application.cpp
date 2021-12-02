@@ -361,7 +361,7 @@ void Application::RegisterFileImGuiLayer()
         ImGui::NextColumn();
         ImGui::Text("%d", m_RegFile.m_RegisterValue[i]);
         ImGui::NextColumn();
-        ImGui::Text("%s", m_RegFile.m_ProducingUnit[i].c_str());
+        ImGui::Text("%s", m_RegFile.m_ProducingUnit[i].front().c_str());
         ImGui::NextColumn();
         ImGui::Separator();
     }
@@ -624,6 +624,7 @@ void Application::Reset()
     m_Controller->Clean();
     for (int i = 0; i < 8; i++)
     {
-        m_RegFile.m_ProducingUnit[i] = "N";
+        while (m_RegFile.m_ProducingUnit[i].front() != "N")
+            m_RegFile.m_ProducingUnit[i].pop_front();
     }
 }

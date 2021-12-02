@@ -26,6 +26,7 @@ private:
     void WriteBackInstructions();
     void CommonDataBusWork();
     bool CheckDependancy(int32_t addr, int32_t stationNumber, int32_t PC);
+    bool WAWDep(Instruction &inst);
 
     int32_t m_CycleNumber;
     std::vector<ReservationStation> &m_Stations;
@@ -33,9 +34,8 @@ private:
     const std::vector<Instruction> &m_InstructionMemory;
     RegisterFile &m_RegFile;
     std::map<uint16_t, int16_t> &m_Memory;
-    std::array<std::vector<std::pair<int32_t, int32_t>>, 8> m_WriteBackQueues;
+
     int &m_Top;
-    std::vector<int> m_WriteBackRegistersAccess;
     std::vector<std::pair<int, Instruction *>> m_AfterBranchInstructions;
     std::queue<Instruction *> m_BranchInstructions;
     bool m_BranchFound = false;

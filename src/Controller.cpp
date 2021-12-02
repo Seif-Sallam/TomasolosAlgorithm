@@ -24,19 +24,22 @@ void Controller::Advance()
     m_CycleNumber++;
     //Issuing the instructions
     IssueInstructions();
-    m_RegFile.m_ProducingUnit[0] = "N";
+    while (m_RegFile.m_ProducingUnit[0].front() != "N")
+        m_RegFile.m_ProducingUnit[0].pop_front();
     m_RegFile.m_RegisterValue[0] = 0;
     //Executing instructions
     //Writing back
     WriteBackInstructions();
-    m_RegFile.m_ProducingUnit[0] = "N";
+    while (m_RegFile.m_ProducingUnit[0].front() != "N")
+        m_RegFile.m_ProducingUnit[0].pop_front();
     m_RegFile.m_RegisterValue[0] = 0;
 
     //Common Data Bus
     CommonDataBusWork();
 
     ExecuteInstructions();
-    m_RegFile.m_ProducingUnit[0] = "N";
+    while (m_RegFile.m_ProducingUnit[0].front() != "N")
+        m_RegFile.m_ProducingUnit[0].pop_front();
     m_RegFile.m_RegisterValue[0] = 0;
 }
 bool Controller::OperandsReady(ReservationStation &station)
@@ -76,11 +79,6 @@ bool Controller::IsCorrectUnit(Unit stationType, Unit instructionType)
 
 void Controller::Clean()
 {
-    for (int i = 0; i < 8; i++)
-    {
-        m_WriteBackQueues[i].clear();
-    }
-    m_WriteBackRegistersAccess.clear();
     m_AfterBranchInstructions.clear();
     m_BranchFound = false;
     m_InstructionIssuing = true;
@@ -119,14 +117,14 @@ void Controller::IssueInstructions()
                     rs2 = currentInst.rs2;
                     rd = currentInst.rd;
                     //  if rs1 is free
-                    if (m_RegFile.m_ProducingUnit[rs1] == "N")
+                    if (m_RegFile.m_ProducingUnit[rs1].front() == "N")
                     {
                         m_Stations[i].Vj = m_RegFile.m_RegisterValue[rs1];
                         m_Stations[i].Qj = "N";
                     }
                     else
                     {
-                        m_Stations[i].Qj = m_RegFile.m_ProducingUnit[rs1];
+                        m_Stations[i].Qj = m_RegFile.m_ProducingUnit[rs1].front();
                     }
                     // if res2 is also free
                     if (type == Unit::LW || type == Unit::ADDI || type == Unit::JAL)
@@ -136,23 +134,21 @@ void Controller::IssueInstructions()
                     }
                     else
                     {
-                        if (m_RegFile.m_ProducingUnit[rs2] == "N")
+                        if (m_RegFile.m_ProducingUnit[rs2].front() == "N")
                         {
                             m_Stations[i].Vk = m_RegFile.m_RegisterValue[rs2];
                             m_Stations[i].Qk = "N";
                         }
                         else
                         {
-                            m_Stations[i].Qk = m_RegFile.m_ProducingUnit[rs2];
+                            m_Stations[i].Qk = m_RegFile.m_ProducingUnit[rs2].front();
                         }
                     }
 
                     if (type != Unit::SW && type != Unit::BEQ)
                     {
-                        m_RegFile.m_ProducingUnit[rd] = m_Stations[i].m_Name;
+                        m_RegFile.PushProducingUnit(m_Stations[i].m_Name, rd);
                     }
-                    m_WriteBackRegistersAccess.push_back(rd);
-                    m_WriteBackQueues[rd].push_back({i, currentInst.m_PC});
                     m_Stations[i].m_InitiateExecutation = false;
                     currentInst.currentStage = Stage::EXECUTE;
                     m_Top++;
@@ -249,124 +245,79 @@ void Controller::ExecuteInstructions()
 
 void Controller::WriteBackInstructions()
 {
-    if (m_WriteBackRegistersAccess.size() >= 1)
+    for (int i = 0; i < m_Stations.size(); i++)
     {
-        int i = m_WriteBackRegistersAccess[0];
-        auto &Q = m_WriteBackQueues[i];
-        if (!Q.empty())
+        if (m_Stations[i].IsBusy())
         {
-            int stationNumber = Q[0].first;
-            auto &station = m_Stations[stationNumber];
-            // //We are ready to write back
-            if (station.m_UnderWorkInstruction->currentStage == Stage::WRITE_BACK && station.m_UnderWorkInstruction->execute.second != m_CycleNumber)
+            Instruction &currentInst = *m_Stations[i].m_UnderWorkInstruction;
+            auto &station = m_Stations[i];
+            if (currentInst.currentStage == Stage::WRITE_BACK)
             {
-                Q.erase(Q.begin());
-                auto type = station.m_UnderWorkInstruction->type;
-                if (type != Unit::BEQ && type != Unit::SW)
+                bool dep = WAWDep(currentInst);
+                if (!dep)
                 {
-                    m_RegFile.m_RegisterValue[i] = station.result;
-                    if (m_RegFile.m_ProducingUnit[i] == station.m_Name)
-                        m_RegFile.m_ProducingUnit[i] = "N";
-                }
-                else if (type == Unit::SW)
-                {
-                    if (m_Memory.find(station.A) == m_Memory.end())
+                    // We actually start writing back
+                    auto type = currentInst.type;
+                    if (type != Unit::BEQ && type != Unit::SW)
                     {
-                        m_Memory.insert({station.A, station.result});
+                        int rd = currentInst.rd;
+                        m_RegFile.m_RegisterValue[rd] = station.result;
+                        m_RegFile.PopProducingUnit(station.m_Name, rd);
                     }
-                    else
+                    else if (type == Unit::SW)
                     {
-                        m_Memory[station.A] = station.result;
+                        if (m_Memory.find(station.A) == m_Memory.end())
+                            m_Memory.insert({station.A, station.result});
+                        else
+                            m_Memory[station.A] = station.result;
                     }
-                }
-                if (type == Unit::BEQ)
-                {
-                    if (station.result == 1)
+                    if (type == Unit::BEQ)
                     {
-                        //Branch should be taken, we should flush the instructions after the branch and we change the PC
-                        m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
-                        //Flush?
-                        Instruction *branchInst = m_BranchInstructions.front();
-                        m_BranchInstructions.pop();
-                        //Clean those instruction from the write back queues
-                        while (!m_BranchInstructions.empty() && m_BranchInstructions.front()->m_PC > branchInst->m_PC)
+                        if (station.result == 1)
                         {
-                            m_BranchInstructions.front()->MarkAsFlushed();
-                            m_Stations[m_BranchInstructions.front()->stationNumber].Clean();
+                            //Branch should be taken, we should flush the instructions after the branch and we change the PC
+                            m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
+                            //Flush?
+                            Instruction *branchInst = m_BranchInstructions.front();
                             m_BranchInstructions.pop();
-                        }
-                        for (int index = 1; index < 8; index++)
-                        {
-                            auto &vec = m_WriteBackQueues[index];
-                            for (int j = 0; j < vec.size(); j++)
+                            //Clean those instruction from the write back queues
+                            while (!m_BranchInstructions.empty() && m_BranchInstructions.front()->m_PC > branchInst->m_PC)
                             {
-                                auto &station = m_Stations[m_WriteBackQueues[index][j].first];
-                                auto &inst = station.m_UnderWorkInstruction;
-                                if (inst->m_PC > branchInst->m_PC)
-                                {
-                                    if (station.m_Name == m_RegFile.m_ProducingUnit[index])
-                                        m_RegFile.m_ProducingUnit[index] = "N";
-                                    inst->MarkAsFlushed();
-                                    m_WriteBackQueues[index].erase(m_WriteBackQueues[index].begin() + j);
-                                    station.Clean();
-                                    j--;
-                                }
+                                m_BranchInstructions.front()->MarkAsFlushed();
+                                m_Stations[m_BranchInstructions.front()->stationNumber].Clean();
+                                m_BranchInstructions.pop();
                             }
-                        }
-                        for (int r = 0; r < m_WriteBackRegistersAccess.size(); r++)
-                        {
-                            int number = m_WriteBackRegistersAccess[r];
-                            if (m_WriteBackQueues[number].empty())
+                            for (int v = 0; v < m_Stations.size(); v++)
                             {
-                                m_WriteBackRegistersAccess.erase(m_WriteBackRegistersAccess.begin() + r);
-                                r--;
-                            }
-                            else
-                            {
-                                auto &vec = m_WriteBackQueues[number];
-                                for (int s = 0; s < vec.size(); s++)
+                                if (m_Stations[v].IsBusy())
                                 {
-                                    auto &st = m_Stations[vec[s].first];
-                                    if (st.m_UnderWorkInstruction->m_PC > branchInst->m_PC)
+                                    if (m_Stations[v].m_UnderWorkInstruction->m_PC > branchInst->m_PC)
                                     {
-                                        vec.erase(vec.begin() + s);
-                                        s--;
+                                        int rd = m_Stations[v].m_UnderWorkInstruction->rd;
+                                        m_RegFile.PopProducingUnit(m_Stations[v].m_Name, rd);
+                                        m_Stations[v].m_UnderWorkInstruction->MarkAsFlushed();
+                                        m_Stations[v].Clean();
                                     }
                                 }
                             }
                         }
-                        //This is for the ADD R0 R0 R0 INSTRUCTIONS
-                        for (int v = 0; v < m_Stations.size(); v++)
-                        {
-                            if (m_Stations[v].IsBusy())
-                            {
-                                if (m_Stations[v].m_UnderWorkInstruction->m_PC > branchInst->m_PC)
-                                {
-                                    m_Stations[v].m_UnderWorkInstruction->MarkAsFlushed();
-                                    m_Stations[v].Clean();
-                                }
-                            }
-                        }
+                        m_BranchFound = !m_BranchInstructions.empty();
+                        if (!m_BranchFound)
+                            m_AfterBranchInstructions.clear();
                     }
-                    m_BranchFound = !m_BranchInstructions.empty();
-                    if (!m_BranchFound)
-                        m_AfterBranchInstructions.clear();
-                }
-                if (type == Unit::JAL || type == Unit::JALR)
-                {
-                    m_InstructionIssuing = true; // we jumped and now we want to get back to work
-                }
-                CDB.sourceStation = station.m_Name;
-                if (i == 0)
-                    CDB.value = 0;
-                else
-                    CDB.value = station.result;
+                    if (type == Unit::JAL || type == Unit::JALR)
+                    {
+                        m_InstructionIssuing = true; // we jumped and now we want to get back to work
+                    }
+                    CDB.sourceStation = station.m_Name;
+                    if (i == 0)
+                        CDB.value = 0;
+                    else
+                        CDB.value = station.result;
 
-                station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
-                station.Clean();
-                if (!m_WriteBackRegistersAccess.empty())
-                    m_WriteBackRegistersAccess.erase(m_WriteBackRegistersAccess.begin());
-                // std::cout << "HERE\n";
+                    station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
+                    station.Clean();
+                }
             }
         }
     }
@@ -408,6 +359,31 @@ bool Controller::CheckDependancy(int32_t addr, int32_t stationNumber, int32_t PC
                         return true;
                 }
             }
+    }
+    return false;
+}
+
+bool Controller::WAWDep(Instruction &inst)
+{
+    int stationNumber = inst.stationNumber;
+    int &instPC = inst.m_PC;
+    for (int i = 0; i < m_Stations.size(); i++)
+    {
+        auto &currentStation = m_Stations[i];
+        if (currentStation.IsBusy())
+        {
+            int rd = currentStation.m_UnderWorkInstruction->rd;
+            if (rd != 0)
+            {
+                if (rd == inst.rd)
+                {
+                    if (instPC > currentStation.m_UnderWorkInstruction->m_PC)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
     }
     return false;
 }
