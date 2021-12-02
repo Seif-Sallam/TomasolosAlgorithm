@@ -9,8 +9,10 @@ Controller::Controller(int &top, std::vector<Instruction> &instructionsQ,
     CDB.sourceStation = "N";
 }
 
-void Controller::JumpToCycle(int cycle)
+void Controller::JumpNCycles(int n)
 {
+    for (int i = 0; i < n; i++)
+        Advance();
 }
 
 /*

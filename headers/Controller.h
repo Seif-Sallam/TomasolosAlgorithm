@@ -13,7 +13,7 @@ public:
                std::vector<Instruction> &instructionMemory, std::vector<ReservationStation> &stations,
                RegisterFile &regFile, std::map<uint16_t, int16_t> &memory);
     void Advance();
-    void JumpToCycle(int cycle);
+    void JumpNCycles(int n);
     inline int32_t &GetCycleNumber() { return m_CycleNumber; }
     bool IsCorrectUnit(Unit stationType, Unit instructionType);
     void Clean();
