@@ -27,9 +27,6 @@ void Controller::Advance()
     m_RegFile.m_ProducingUnit[0] = "N";
     m_RegFile.m_RegisterValue[0] = 0;
     //Executing instructions
-    ExecuteInstructions();
-    m_RegFile.m_ProducingUnit[0] = "N";
-    m_RegFile.m_RegisterValue[0] = 0;
     //Writing back
     WriteBackInstructions();
     m_RegFile.m_ProducingUnit[0] = "N";
@@ -37,6 +34,10 @@ void Controller::Advance()
 
     //Common Data Bus
     CommonDataBusWork();
+
+    ExecuteInstructions();
+    m_RegFile.m_ProducingUnit[0] = "N";
+    m_RegFile.m_RegisterValue[0] = 0;
 }
 bool Controller::OperandsReady(ReservationStation &station)
 {
@@ -186,7 +187,9 @@ void Controller::ExecuteInstructions()
                 rs2 = underWorkInstruction.rs2;
                 //We are executing the instruction which we have just issued
                 if (underWorkInstruction.issue.second != m_CycleNumber)
-                { //Instruction was NOT already executed
+                {
+                    //Instruction was NOT already executed
+
                     if (underWorkInstruction.currentStage == Stage::EXECUTE)
                     {
                         // Check if the operands are ready, then we initiate execuation
@@ -196,7 +199,10 @@ void Controller::ExecuteInstructions()
                         }
                         if (station.m_InitiateExecutation)
                         {
-
+                            if (underWorkInstruction.m_CurrentCycle == 0)
+                            {
+                                underWorkInstruction.startExecute = {true, m_CycleNumber};
+                            }
                             //If we are finished, then set that we executed the instruction and put its cycle number
                             if (underWorkInstruction.Finished())
                             {

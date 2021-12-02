@@ -512,17 +512,19 @@ void Application::InstructionExecutationLayer()
 
         ImGui::BeginChild("Tabular");
         {
-            ImGui::Columns(4);
+            ImGui::Columns(5);
             ImGui::Text("Instruction");
             ImGui::NextColumn();
             ImGui::Text("Issue");
+            ImGui::NextColumn();
+            ImGui::Text("Executation Start");
             ImGui::NextColumn();
             ImGui::Text("Execute");
             ImGui::NextColumn();
             ImGui::Text("WriteBack");
             ImGui::NextColumn();
             ImGui::Separator();
-            ImGui::Columns(4);
+            ImGui::Columns(5);
             for (int i = 0; i < m_InstructionsQueue.size(); i++)
             {
                 ImGui::Text(m_InstructionsQueue[i].str.c_str(), "");
@@ -530,6 +532,16 @@ void Application::InstructionExecutationLayer()
                 if (!m_InstructionsQueue[i].IsFlushed())
                     if (m_InstructionsQueue[i].issue.first)
                         ImGui::Text("Y(%d)", m_InstructionsQueue[i].issue.second);
+                    else
+                        ImGui::Text("N");
+                else
+                {
+                    ImGui::TextUnformatted("FLUSHED");
+                }
+                ImGui::NextColumn();
+                if (!m_InstructionsQueue[i].IsFlushed())
+                    if (m_InstructionsQueue[i].startExecute.first)
+                        ImGui::Text("Y(%d)", m_InstructionsQueue[i].startExecute.second);
                     else
                         ImGui::Text("N");
                 else
