@@ -44,7 +44,7 @@ private:
     void InstructionExecutationLayer();
 
     void Reset();
-    void LoadInstructionsFile();
+    void LoadInstructionsFile(bool &);
 
     int LoadData(const std::string &inFileName);
 

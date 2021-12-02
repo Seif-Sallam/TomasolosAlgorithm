@@ -162,12 +162,23 @@ void Application::SetupDockingSpace()
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
     ImGui::BeginMenuBar();
-    LoadInstructionsFile();
-    if (ImGui::Button("Close Application"))
+    // ImGui::ShowDemoWindow();
+    static bool Opened = false;
+    if (ImGui::BeginMenu("File"))
     {
-        m_Window->close();
+        ImGui::MenuItem("Load Instructions", "", &Opened);
+        if (ImGui::MenuItem("Close Application", "Escape"))
+            m_Window->close();
+        ImGui::EndMenu();
+    }
+
+    if (Opened)
+    {
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".txt", ".");
+        LoadInstructionsFile(Opened);
     }
     ImGui::Separator();
+    ImGui::TextUnformatted("                                                 ");
     ImGui::TextUnformatted("Custom Starting PC Value:");
     ImGui::SameLine();
     ImGui::PushItemWidth(45.0f);
@@ -392,6 +403,8 @@ void Application::RegisterFileImGuiLayer()
         for (int i = 0; i < 8; i++)
         {
             m_RegFile.m_RegisterValue[i] = 0;
+            while (m_RegFile.m_ProducingUnit[i].front() != "N")
+                m_RegFile.m_ProducingUnit[i].pop_front();
         }
     }
     ImGui::Separator();
@@ -414,11 +427,8 @@ void Application::RegisterFileImGuiLayer()
     ImGui::End();
 }
 
-void Application::LoadInstructionsFile()
+void Application::LoadInstructionsFile(bool &opened)
 {
-    if (ImGui::Button("Load Instructions"))
-
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".txt", ".");
     if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
@@ -431,6 +441,7 @@ void Application::LoadInstructionsFile()
             }
         }
         ImGuiFileDialog::Instance()->Close();
+        opened = false;
     }
 }
 
