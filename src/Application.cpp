@@ -162,7 +162,6 @@ void Application::SetupDockingSpace()
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
     ImGui::BeginMenuBar();
-    // ImGui::ShowDemoWindow();
     static bool Opened = false;
     if (ImGui::BeginMenu("File"))
     {
@@ -178,7 +177,13 @@ void Application::SetupDockingSpace()
         LoadInstructionsFile(Opened);
     }
     ImGui::Separator();
-    ImGui::TextUnformatted("                                                 ");
+    // ImGui::TextUnformatted("                                                 ");
+
+    ImGui::SetCursorPosX(ImGui::GetWindowSize().x - 460.0f);
+    HelpMarker("Setting the PC value will change the value of the Index (Instruction Memory) and the PC (Instruction Queue).\n"
+               "It does not affect the performance of the algorithm nor the executation of the instructions.\n"
+               "The Cycle Number starts with -1. It indicates that we did not start the simulation yet.\n");
+
     ImGui::TextUnformatted("Custom Starting PC Value:");
     ImGui::SameLine();
     ImGui::PushItemWidth(45.0f);
@@ -188,7 +193,6 @@ void Application::SetupDockingSpace()
     ImGui::Text("PC: %d", m_Top + PC);
     ImGui::Separator();
     ImGui::Text("Cycle Number: %d", m_Controller->GetCycleNumber());
-    ImGui::Separator();
 
     ImGui::EndMenuBar();
     ImGui::DockSpace(ImGui::GetID("Docking Space"));
@@ -256,7 +260,6 @@ void Application::ReservationStationsLayer()
                 m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
             }
         }
-        // Sort();
         std::sort(m_Stations.begin(), m_Stations.end());
     }
     ImGui::SameLine();
@@ -266,6 +269,10 @@ void Application::ReservationStationsLayer()
             ReservationStation::stationsCount[i] = 0;
         m_Stations.clear();
     }
+    ImGui::SameLine();
+    HelpMarker("This window shows the different reservation stations that are used in the current simulation.\n"
+               "You can add new reservation stations by selecting the one you want to add and then click on Add Station button\n");
+
     ImGui::BeginChild("Stations Table");
     ImGui::Separator();
     ImGui::Columns(8);
@@ -307,7 +314,13 @@ void Application::ReservationStationsLayer()
 void Application::MemoryImGuiLayer()
 {
     ImGui::Begin("Memory");
+    // ImGui::BeginMenuBar();
     ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
+    ImGui::SetCursorPosX(ImGui::GetWindowSize().x - 30.0f);
+    HelpMarker("The Memory window here is used to observe the different memory addresses accessed by the instructions.\n"
+               "You can also add certain addresses to watch OR preload the memory with certain data.");
+
+    // ImGui::EndMenuBar();
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::Memory;
 
@@ -370,6 +383,9 @@ void Application::RegisterFileImGuiLayer()
     ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::RegisterFile;
+    HelpMarker("The Register File window shows the 8 registers in our simulation and the producing unit of each register at any point in time.\n"
+               "The producing unit will be initialized with \"N\" as in NO_UNIT, and the values will start with 0 all the time.\n");
+
     ImGui::Columns(3, "Table");
     ImGui::Separator();
     ImGui::Text("Register");
@@ -390,8 +406,11 @@ void Application::RegisterFileImGuiLayer()
         ImGui::Separator();
     }
     ImGui::Columns(1);
-
-    if (ImGui::Button("Next Cycle", ImVec2(ImGui::GetWindowWidth(), 22.0f)))
+    HelpMarker("The Next Cycle Button is used to advance in the cycles of the simulation.\n"
+               "Reset button resets the state of the simulation but NOT the register file VALUES, the register file producing units will only be cleared."
+               "To clear the producing units and the register file values (NOT RECOMMENDED WITHOUT RESETING), you can click Reset Register File values");
+    ImGui::SameLine();
+    if (ImGui::Button("Next Cycle", ImVec2(ImGui::GetWindowWidth() - 30.f, 22.0f)))
         m_Controller->Advance();
 
     if (ImGui::Button("Reset", ImVec2(ImGui::GetWindowWidth() / 3.0f, 22.0f)))
@@ -415,7 +434,7 @@ void Application::RegisterFileImGuiLayer()
     ImGui::PopTextWrapPos();
 
     for (int i = 0; i < int32_t(Unit::UNIT_COUNT); i++)
-        ImGui::SliderInt(s_UnitName[i].c_str(), &s_CyclesCount[i], 1, 20);
+        ImGui::SliderInt(s_UnitName[i].c_str(), &s_CyclesCount[i], 1, 100);
 
     ImGui::Text("Saving will reset the simulation");
     if (ImGui::Button("Save Data"))
@@ -447,8 +466,9 @@ void Application::LoadInstructionsFile(bool &opened)
 
 void Application::InstructionsMemoryImGuiLayer()
 {
-
     ImGui::Begin("Instructions Memory");
+    HelpMarker("Instruction Memory window shows the loaded instructions from the text file and which one is the top."
+               "The top instruction is the one about to be issued next cycle.\n");
     ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
     {
@@ -490,6 +510,9 @@ void Application::InstructionsMemoryImGuiLayer()
 void Application::InstructionsQueueImGuiLayer()
 {
     ImGui::Begin("Instructions Queue");
+    HelpMarker("The instruction Queue just shows the different instructions that got into the Queue (issued already).\n"
+               "It is designed this way and not an ever growing queue that is preloaded because of the branch and jump instructions that doesn't help with this implementation."
+               "You cannot always tell which insturction will be next to the issuing. That is why we only add it to the Queue iff it was issued.\n");
     ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
     {
@@ -534,9 +557,32 @@ void Application::InstructionExecutationLayer()
 {
     ImGui::Begin("Instruction Executation");
     {
-        ImGui::Text("Logging to a imgui_log.txt");
-        ImGui::LogButtons();
-
+        ImGui::Text("Logging to a \"Green_table.txt\"");
+        ImGui::SameLine();
+        ImGui::LogToFile();
+        static bool addFlushed = true;
+        ImGui::Checkbox("Add Flushed", &addFlushed);
+        ImGui::SameLine();
+        if (ImGui::Button("Log to file###1"))
+            LogToFile(addFlushed);
+        ImGui::SameLine();
+        HelpMarker("This window shows the prograss of the provieded program to the instructions and when it was issues, started executation and when it finished executation and when it wrote back.\n"
+                   "Click the button Log to file to save the data to the file \"Green_Table.txt\". It will also contain the number of cycles, IPC, and the branch misprediction percentage.\n");
+        int lastInstructionCycle = 0;
+        if (m_InstructionsQueue.size() > 0)
+            lastInstructionCycle = m_InstructionsQueue.back().writeBack.second;
+        int numberOfInstructions = m_Controller->GetNumberOfInstructions();
+        if (numberOfInstructions != 0)
+            IPC = (double)lastInstructionCycle / (double)numberOfInstructions;
+        else
+            IPC = 0.0;
+        ImGui::Text("IPC: %.1f", IPC);
+        int branchInst = m_Controller->GetBranchInstructionsCount();
+        branchMisPri = 0.0;
+        if (branchInst != 0)
+            branchMisPri = (double)m_Controller->GetMisPredictions() / branchInst * 100.0;
+        ImGui::Text("Branch Misses Percentage: %.1f ", branchMisPri);
+        ImGui::Separator();
         ImGui::BeginChild("Tabular");
         {
             ImGui::Columns(5);
@@ -646,4 +692,63 @@ void Application::Reset()
         while (m_RegFile.m_ProducingUnit[i].front() != "N")
             m_RegFile.m_ProducingUnit[i].pop_front();
     }
+}
+
+void Application::HelpMarker(const char *desc)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+void Application::LogToFile(bool removeFlushed)
+{
+    std::ofstream output("Green_Table.txt");
+    int lastInstructionCycle = 0;
+    if (m_InstructionsQueue.size() > 0)
+        lastInstructionCycle = m_InstructionsQueue.back().writeBack.second;
+    output << "Number of Cycles: " << m_Controller->GetCycleNumber() << std::endl;
+    output << "Last Instruction Cycle: " << lastInstructionCycle << std::endl;
+    output << "IPC: " << IPC << std::endl;
+
+    output << "Branch misprediction percentage: " << branchMisPri << "%" << std::endl;
+    int32_t spaces = 20;
+    output << "\nGreen Table:\n";
+    output << std::left << std::setfill('-') << std::setw(93) << "";
+    output << std::setfill(' ') << std::endl;
+    output << std::left << "| " << std::setw(spaces) << "Issue"
+           << " | " << std::setw(spaces) << "Execution Start"
+           << " | " << std::setw(spaces) << "Executation End"
+           << " | " << std::setw(spaces) << "Write back"
+           << " | " << std::endl;
+
+    output << std::left << std::setfill('-') << std::setw(93) << "";
+    output << std::setfill(' ') << std::endl;
+
+    for (int i = 0; i < m_InstructionsQueue.size(); i++)
+    {
+        if (m_InstructionsQueue[i].IsFlushed())
+        {
+            if (removeFlushed)
+                continue;
+            else
+                output << "| " << std::setw(spaces) << "FLUSHED"
+                       << " | " << std::setw(spaces) << "FLUSHED"
+                       << " | " << std::setw(spaces) << "FLUSHED"
+                       << " | " << std::setw(spaces) << "FLUSHED"
+                       << " | " << std::endl;
+        }
+        else
+            output << "| " << std::setw(spaces) << m_InstructionsQueue[i].issue.second << " | "
+                   << std::setw(spaces) << m_InstructionsQueue[i].startExecute.second << " | "
+                   << std::setw(spaces) << m_InstructionsQueue[i].execute.second << " | "
+                   << std::setw(spaces) << m_InstructionsQueue[i].writeBack.second << " | " << std::endl;
+    }
+    output.close();
 }

@@ -84,6 +84,9 @@ void Controller::Clean()
     m_AfterBranchInstructions.clear();
     m_BranchFound = false;
     m_InstructionIssuing = true;
+    m_BranchInstructionsCount = 0;
+    m_MisPredictions = 0;
+    m_NumberOfInstructions = 0;
 }
 
 bool Controller::AfterBranchInstruction(Instruction &inst)
@@ -275,8 +278,10 @@ void Controller::WriteBackInstructions()
                     }
                     if (type == Unit::BEQ)
                     {
+                        m_BranchInstructionsCount++;
                         if (station.result == 1)
                         {
+                            m_MisPredictions++;
                             //Branch should be taken, we should flush the instructions after the branch and we change the PC
                             m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
                             //Flush?
@@ -319,6 +324,7 @@ void Controller::WriteBackInstructions()
 
                     station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
                     station.Clean();
+                    m_NumberOfInstructions++;
                 }
             }
         }
