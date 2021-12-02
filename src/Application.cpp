@@ -599,6 +599,8 @@ int Application::LoadData(const std::string &inFileName)
     {
         std::string instruction;
         std::getline(inputFile, instruction);
+        if (instruction[0] == '#')
+            continue;
         if (instruction.size() > 3)
         {
             m_InstructionMemory.emplace_back(instruction, i);
