@@ -15,9 +15,6 @@ public:
     void Advance();
     void JumpNCycles(int n);
     inline int32_t &GetCycleNumber() { return m_CycleNumber; }
-    inline int32_t GetMisPredictions() { return m_MisPredictions; }
-    inline int32_t GetBranchInstructionsCount() { return m_BranchInstructionsCount; }
-    inline int32_t GetNumberOfInstructions() { return m_NumberOfInstructions; }
     bool IsCorrectUnit(Unit stationType, Unit instructionType);
     void Clean();
 
@@ -49,7 +46,4 @@ private:
     };
     CommonDataBus CDB;
     bool m_InstructionIssuing = true;
-    int32_t m_BranchInstructionsCount = 0;
-    int32_t m_MisPredictions = 0;
-    int32_t m_NumberOfInstructions = 0;
 };

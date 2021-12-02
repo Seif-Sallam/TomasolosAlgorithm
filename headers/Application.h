@@ -12,7 +12,6 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 enum class Windows
 {
     Memory = 0,
@@ -48,8 +47,6 @@ private:
     void LoadInstructionsFile(bool &);
 
     int LoadData(const std::string &inFileName);
-    void HelpMarker(const char *desc);
-    void LogToFile(bool removeFlushed);
 
 private:
     std::map<uint16_t, int16_t> m_Memory;
@@ -71,6 +68,4 @@ private:
     Controller *m_Controller;
     int32_t PC;
     bool m_Fullscreen = false;
-    double IPC = 0;
-    double branchMisPri = 0;
 };
