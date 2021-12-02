@@ -7,7 +7,6 @@ ReservationStation::ReservationStation(const std::string &name, int *top, Unit t
     m_StationNumber = stationsCount[uint32_t(type)]++;
     m_UnderWorkInstruction = nullptr;
     m_Name = name + std::to_string(m_StationNumber);
-    A = (m_Type == Unit::SW || m_Type == Unit::LW) ? -1 : 0;
 }
 
 void ReservationStation::ImGuiLayer()
@@ -108,7 +107,7 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
 
 void ReservationStation::Clean()
 {
-    A = (m_Type == Unit::SW || m_Type == Unit::LW) ? -1 : 0;
+    A = 0;
     m_InitiateExecutation = false;
     // m_UnderWorkInstruction = nullptr;
     m_IsBusy = false;
