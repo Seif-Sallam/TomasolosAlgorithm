@@ -39,7 +39,6 @@ private:
     void ReservationStationsLayer();
     void MemoryImGuiLayer();
     void RegisterFileImGuiLayer();
-    void RenderWindowImGuiLayer();
     void InstructionsMemoryImGuiLayer();
     void InstructionsQueueImGuiLayer();
     void InstructionExecutationLayer();

@@ -68,7 +68,6 @@ void Application::Update()
         ReservationStationsLayer();
         MemoryImGuiLayer();
         RegisterFileImGuiLayer();
-        RenderWindowImGuiLayer();
         InstructionsMemoryImGuiLayer();
         InstructionsQueueImGuiLayer();
         InstructionExecutationLayer();
@@ -405,24 +404,6 @@ void Application::RegisterFileImGuiLayer()
         Reset();
     }
     ImGui::End();
-}
-
-void Application::RenderWindowImGuiLayer()
-{
-    // ImGui::Begin("GameWindow");
-    // if (ImGui::IsWindowFocused())
-    // {
-    //     m_ActiveWindow = Windows::RenderWindow;
-    // }
-    // ImGui::BeginChild("GameRenderer");
-    // sf::Vector2f size = sf::Vector2f(m_Window->getSize().x, m_Window->getSize().y);
-    // m_RenderTexture->create(m_Window->getSize().x, m_Window->getSize().y);
-
-    // m_WindowSize = ImGui::GetWindowSize();
-    // ImGui::Image(*m_RenderTexture, sf::Vector2f(m_WindowSize.x, m_WindowSize.y));
-    // m_View.setSize(m_WindowSize.x * 2, m_WindowSize.y * 2);
-    // ImGui::EndChild();
-    // ImGui::End();
 }
 
 void Application::LoadInstructionsFile()
