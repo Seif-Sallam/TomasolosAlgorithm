@@ -300,15 +300,12 @@ void Application::MemoryImGuiLayer()
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::Memory;
 
-    ImGui::BeginChild("Table Mem");
+    ImGui::BeginChild("AddToWatch");
     {
         static int addr = 0;
-        ImGui::Text("Enter the address you want to watch");
-        ImGui::Columns(2);
-        ImGui::Text("Address:");
+        ImGui::Text("Address: ");
         ImGui::SameLine();
         ImGui::InputScalar("", ImGuiDataType_U16, &addr);
-        ImGui::NextColumn();
         if (ImGui::Button("Add to watch"))
         {
             if (m_Memory.find(addr) == m_Memory.end())
@@ -318,7 +315,23 @@ void Application::MemoryImGuiLayer()
         }
         ImGui::Columns(1);
     }
-
+    {
+        // ImGui::BeginChild("Add Addresses");
+        ImGui::Columns(1);
+        static int addr = 0;
+        static int value = 0;
+        ImGui::Text("Address: ");
+        ImGui::SameLine();
+        ImGui::InputInt("###0", &addr, 0);
+        ImGui::Text("Value:   ");
+        ImGui::SameLine();
+        ImGui::InputInt("###1", &value, 0);
+        if (ImGui::Button("Add Address with Value"))
+        {
+            m_Memory[addr] = value;
+        }
+        // ImGui::EndChild();
+    }
     ImGui::Columns(2, "Memory Table");
     ImGui::Separator();
     ImGui::Text("Address");
@@ -382,11 +395,6 @@ void Application::RegisterFileImGuiLayer()
         }
     }
     ImGui::Separator();
-
-    // ImGui::TextUnformatted("Custom Starting PC Value:");
-    // ImGui::SameLine();
-    // ImGui::InputInt("", &PC, 1, 100, ImGuiInputTextFlags_AlwaysOverwrite);
-    // ImGui::Separator();
 
     ImGui::PushTextWrapPos(ImGui::GetWindowWidth());
     ImGui::TextUnformatted("Changes the number of cycles for each instruction and an extra cycle for JAL, JALR, and BEQ instructions to compute the address, and 2 extra cycles for LW and SW to read/write from the memory");
