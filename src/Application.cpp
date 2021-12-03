@@ -559,7 +559,6 @@ void Application::InstructionExecutationLayer()
     {
         ImGui::Text("Logging to a \"Green_table.txt\"");
         ImGui::SameLine();
-        ImGui::LogToFile();
         static bool addFlushed = true;
         ImGui::Checkbox("Add Flushed", &addFlushed);
         ImGui::SameLine();
