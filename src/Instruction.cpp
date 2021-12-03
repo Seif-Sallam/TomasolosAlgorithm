@@ -168,7 +168,7 @@ void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
     else
         ImGui::Columns(7);
     ImGui::PushItemWidth(20.0f);
-    ImGui::Text("%d", pc);
+    ImGui::Text("%d", m_PC);
     ImGui::PopItemWidth();
     ImGui::NextColumn();
     ImGui::Text(str.c_str(), "");

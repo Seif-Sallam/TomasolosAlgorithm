@@ -283,7 +283,7 @@ void Controller::WriteBackInstructions()
                         {
                             m_MisPredictions++;
                             //Branch should be taken, we should flush the instructions after the branch and we change the PC
-                            m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC;
+                            m_Top = station.m_UnderWorkInstruction->imm + station.m_UnderWorkInstruction->m_PC + 1;
                             //Flush?
                             Instruction *branchInst = m_BranchInstructions.front();
                             m_BranchInstructions.pop();
@@ -304,6 +304,34 @@ void Controller::WriteBackInstructions()
                                         m_RegFile.PopProducingUnit(m_Stations[v].m_Name, rd);
                                         m_Stations[v].m_UnderWorkInstruction->MarkAsFlushed();
                                         m_Stations[v].Clean();
+                                    }
+                                }
+                            }
+                            for (int i = 0; i < m_AfterBranchInstructions.size(); i++)
+                            {
+                                auto &inst = m_AfterBranchInstructions[i].second;
+                                if (inst->m_PC > currentInst.m_PC)
+                                {
+                                    m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            m_BranchInstructions.pop();
+                            for (int i = 0; i < m_AfterBranchInstructions.size(); i++)
+                            {
+                                auto &inst = m_AfterBranchInstructions[i].second;
+                                if (inst->type == Unit::BEQ)
+                                {
+                                    m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
+                                    break;
+                                }
+                                else
+                                {
+                                    if (inst->m_PC > currentInst.m_PC)
+                                    {
+                                        m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
                                     }
                                 }
                             }

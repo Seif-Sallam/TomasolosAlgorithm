@@ -706,7 +706,7 @@ void Application::HelpMarker(const char *desc)
     }
 }
 
-void Application::LogToFile(bool removeFlushed)
+void Application::LogToFile(bool addFlushed)
 {
     std::ofstream output("Green_Table.txt");
     int lastInstructionCycle = 0;
@@ -719,32 +719,33 @@ void Application::LogToFile(bool removeFlushed)
     output << "Branch misprediction percentage: " << branchMisPri << "%" << std::endl;
     int32_t spaces = 20;
     output << "\nGreen Table:\n";
-    output << std::left << std::setfill('-') << std::setw(93) << "";
+    output << std::left << std::setfill('-') << std::setw(116) << "";
     output << std::setfill(' ') << std::endl;
-    output << std::left << "| " << std::setw(spaces) << "Issue"
+    output << std::left << "| " << std::setw(spaces) << "Instruction"
+           << " | " << std::setw(spaces) << "Issue"
            << " | " << std::setw(spaces) << "Execution Start"
            << " | " << std::setw(spaces) << "Executation End"
            << " | " << std::setw(spaces) << "Write back"
            << " | " << std::endl;
 
-    output << std::left << std::setfill('-') << std::setw(93) << "";
+    output << std::left << std::setfill('-') << std::setw(116) << "";
     output << std::setfill(' ') << std::endl;
 
     for (int i = 0; i < m_InstructionsQueue.size(); i++)
     {
         if (m_InstructionsQueue[i].IsFlushed())
         {
-            if (removeFlushed)
+            if (!addFlushed)
                 continue;
             else
-                output << "| " << std::setw(spaces) << "FLUSHED"
+                output << "| " << std::setw(spaces) << m_InstructionsQueue[i].str << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::endl;
         }
         else
-            output << "| " << std::setw(spaces) << m_InstructionsQueue[i].issue.second << " | "
+            output << "| " << std::setw(spaces) << m_InstructionsQueue[i].str << " | " << std::setw(spaces) << m_InstructionsQueue[i].issue.second << " | "
                    << std::setw(spaces) << m_InstructionsQueue[i].startExecute.second << " | "
                    << std::setw(spaces) << m_InstructionsQueue[i].execute.second << " | "
                    << std::setw(spaces) << m_InstructionsQueue[i].writeBack.second << " | " << std::endl;

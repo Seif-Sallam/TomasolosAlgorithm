@@ -73,13 +73,13 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
         case Unit::JAL:
         {
             result = m_UnderWorkInstruction->m_PC + 1;
-            *m_Top = m_UnderWorkInstruction->imm + m_UnderWorkInstruction->m_PC;
+            *m_Top = m_UnderWorkInstruction->imm + m_UnderWorkInstruction->m_PC + 1;
         }
         break;
         case Unit::JALR:
         {
             result = m_UnderWorkInstruction->m_PC + 1;
-            *m_Top = m_UnderWorkInstruction->m_PC + Vj;
+            *m_Top = Vj;
         }
         break;
         case Unit::NEG:
