@@ -173,12 +173,11 @@ void Application::SetupDockingSpace()
 
     if (Opened)
     {
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".txt", ".");
+        const char *filters = "Text Files (*.txt){.txt}, Assembly Files (*.asm *.s){.asm,.s}";
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", filters, ".");
         LoadInstructionsFile(Opened);
     }
     ImGui::Separator();
-    // ImGui::TextUnformatted("                                                 ");
-
     ImGui::SetCursorPosX(ImGui::GetWindowSize().x - 460.0f);
     HelpMarker("Setting the PC value will change the value of the Index (Instruction Memory) and the PC (Instruction Queue).\n"
                "It does not affect the performance of the algorithm nor the executation of the instructions.\n"

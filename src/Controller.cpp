@@ -82,6 +82,8 @@ bool Controller::IsCorrectUnit(Unit stationType, Unit instructionType)
 void Controller::Clean()
 {
     m_AfterBranchInstructions.clear();
+    while (m_BranchInstructions.empty() == false)
+        m_BranchInstructions.pop();
     m_BranchFound = false;
     m_InstructionIssuing = true;
     m_BranchInstructionsCount = 0;
@@ -313,6 +315,7 @@ void Controller::WriteBackInstructions()
                                 if (inst->m_PC > currentInst.m_PC)
                                 {
                                     m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
+                                    i--;
                                 }
                             }
                         }
@@ -325,6 +328,7 @@ void Controller::WriteBackInstructions()
                                 if (inst->type == Unit::BEQ)
                                 {
                                     m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
+                                    i--;
                                     break;
                                 }
                                 else
@@ -332,13 +336,12 @@ void Controller::WriteBackInstructions()
                                     if (inst->m_PC > currentInst.m_PC)
                                     {
                                         m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
+                                        i--;
                                     }
                                 }
                             }
                         }
                         m_BranchFound = !m_BranchInstructions.empty();
-                        if (!m_BranchFound)
-                            m_AfterBranchInstructions.clear();
                     }
                     if (type == Unit::JAL || type == Unit::JALR)
                     {
@@ -353,6 +356,7 @@ void Controller::WriteBackInstructions()
                     station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
                     station.Clean();
                     m_NumberOfInstructions++;
+                    break;
                 }
             }
         }
