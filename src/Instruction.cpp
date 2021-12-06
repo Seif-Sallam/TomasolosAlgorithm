@@ -7,6 +7,7 @@ Instruction::Instruction(const std::string &str, int PC)
     : str(str), m_PC(PC)
 {
     Parse();
+
     issue = {false, -1};
     execute = {false, -1};
     writeBack = {false, -1};
@@ -182,10 +183,10 @@ void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
         ImGui::Text("ADDI");
         break;
     case Unit::LW:
-        ImGui::Text("LW");
+        ImGui::Text("LOAD");
         break;
     case Unit::SW:
-        ImGui::Text("SW");
+        ImGui::Text("STORE");
         break;
     case Unit::BEQ:
         ImGui::Text("BEQ");

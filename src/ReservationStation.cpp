@@ -67,7 +67,7 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
         break;
         case Unit::BEQ:
         {
-            result = Vj == Vk;
+            result = (Vj == Vk);
         }
         break;
         case Unit::JAL:
@@ -94,7 +94,10 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
         break;
         case Unit::DIV:
         {
-            result = Vj / Vk;
+            if (Vk != 0)
+                result = Vj / Vk;
+            else
+                result = 0;
         }
         break;
         default:
