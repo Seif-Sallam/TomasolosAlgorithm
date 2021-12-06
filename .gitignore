@@ -34,3 +34,7 @@
 .vscode
 *.json
 Green_Table.txt
+
+Debug
+.vs
+.vscode
