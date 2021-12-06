@@ -205,7 +205,6 @@ void Controller::ExecuteInstructions()
                         {
                             station.A = underWorkInstruction.imm + station.Vj;
                             dep = CheckDependancy(station.A, i, underWorkInstruction.m_PC);
-                            std::cout << "Station Name: " << station.m_Name << ", is dep: " << ((dep) ? "true " : "false") << std::endl;
                             if (underWorkInstruction.m_CurrentCycle == 0)
                                 underWorkInstruction.Advance();
                         }
@@ -232,7 +231,6 @@ void Controller::ExecuteInstructions()
                             }
                             else
                             {
-
                                 underWorkInstruction.Advance();
                                 // Is it the first cycle? if yes compute the target or the address
                                 if (underWorkInstruction.m_CurrentCycle == 1 && underWorkInstruction.type == Unit::BEQ)
@@ -252,12 +250,12 @@ void Controller::ExecuteInstructions()
 
 void Controller::WriteBackInstructions()
 {
-    for (int i = 0; i < m_Stations.size(); i++)
+    for (int st = 0; st < m_Stations.size(); st++)
     {
-        if (m_Stations[i].IsBusy())
+        if (m_Stations[st].IsBusy())
         {
-            Instruction &currentInst = *m_Stations[i].m_UnderWorkInstruction;
-            auto &station = m_Stations[i];
+            Instruction &currentInst = *m_Stations[st].m_UnderWorkInstruction;
+            auto &station = m_Stations[st];
             if (currentInst.currentStage == Stage::WRITE_BACK)
             {
                 bool dep = WAWDep(currentInst);
@@ -314,6 +312,10 @@ void Controller::WriteBackInstructions()
                                 auto &inst = m_AfterBranchInstructions[i].second;
                                 if (inst->m_PC > currentInst.m_PC)
                                 {
+                                    if (inst->type == Unit::JAL || inst->type == Unit::JALR)
+                                    {
+                                        m_InstructionIssuing = true;
+                                    }
                                     m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
                                     i--;
                                 }
@@ -335,6 +337,10 @@ void Controller::WriteBackInstructions()
                                 {
                                     if (inst->m_PC > currentInst.m_PC)
                                     {
+                                        if (inst->type == Unit::JAL || inst->type == Unit::JALR)
+                                        {
+                                            m_InstructionIssuing = true;
+                                        }
                                         m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
                                         i--;
                                     }
@@ -348,8 +354,10 @@ void Controller::WriteBackInstructions()
                         m_InstructionIssuing = true; // we jumped and now we want to get back to work
                     }
                     CDB.sourceStation = station.m_Name;
-                    if (i == 0)
+                    if (currentInst.rd == 0)
+                    {
                         CDB.value = 0;
+                    }
                     else
                         CDB.value = station.result;
 
