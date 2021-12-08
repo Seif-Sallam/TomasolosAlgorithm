@@ -731,7 +731,7 @@ void Application::LogToFile(bool addFlushed)
            << " | " << std::setw(spaces) << "Write back"
            << " |" << std::endl;
 
-    output << std::left << std::setfill('-') << std::setw(125) << "";
+    output << std::left << std::setfill('=') << std::setw(125) << "";
     output << std::setfill(' ') << std::endl;
 
     for (int i = 0; i < m_InstructionsQueue.size(); i++)
@@ -760,5 +760,20 @@ void Application::LogToFile(bool addFlushed)
         output << std::left << std::setfill('-') << std::setw(125) << "";
         output << std::setfill(' ') << std::endl;
     }
+
+    output << "\n\nMemory Content: \n\n";
+    output << std::left << std::setfill('-') << std::setw(47) << "";
+    output << std::setfill(' ') << std::endl;
+    output << std::left << "| " << std::setw(spaces) << "Address"
+           << " | " << std::setw(spaces) << "Value"
+           << " |" << std::endl;
+    output << std::left << std::setfill('=') << std::setw(47) << "";
+    output << std::setfill(' ') << std::endl;
+    for (auto &elm : m_Memory)
+    {
+        output << std::left << "| " << std::setw(spaces) << elm.first << " | " << std::setw(spaces) << elm.second << " |" << std::endl;
+    }
+    output << std::left << std::setfill('-') << std::setw(47) << "";
+    output << std::setfill(' ') << std::endl;
     output.close();
 }
