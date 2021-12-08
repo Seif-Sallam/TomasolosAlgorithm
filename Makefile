@@ -14,6 +14,7 @@ OBJECTS_DIR = ./Objs/
 OBJECTS = $(subst $(SRC_DIR), $(OBJECTS_DIR), $(patsubst %.cpp, %.o, $(wildcard $(SRC_DIR)*.cpp)) )
 INC= -I$(SFML_INC_DIR) -I$(IMGUI_INC_DIR) -I$(IMGUI_DIALOG_DIR) -I$(IMGUI_INC_DIR)imgui/
 CCFLAGS= $(INC)
+vpath %.h $(SRC_INC_DIR)
 
 all: | Dir Proj.out 
 
@@ -32,6 +33,13 @@ $(IMGUI_OBJECTS): $(IMGUI_OBJECTS_DIR)%.o : $(IMGUI_INC_DIR)imgui/%.cpp
 
 $(IMGUI_DIALOG_OBJECTS): $(IMGUI_OBJECTS_DIR)%.o : $(IMGUI_DIALOG_DIR)%.cpp
 	$(CC) -c $(CCFLAGS) $< -o $@
+
+Application.o: Application.h ReservtionStation.h Controller.h RegisterFile.h Application.cpp
+ReservtionStation.o: Instruction.h Operations.h ReservtionStation.cpp
+Controller.o: Controller.h ReservtionStation.h RegisterFile.h Instruction.h Controller.cpp
+Instruction.o: Instruction.h Operations.h
+RegisterFile.o: RegisterFile.h RegisterFile.cpp
+main.o: Application.h Application.cpp
 
 .PHONY: clean
 
