@@ -41,6 +41,8 @@ private:
     int &m_Top;
     std::vector<std::pair<int, Instruction *>> m_AfterBranchInstructions;
     std::queue<Instruction *> m_BranchInstructions;
+
+    std::vector<std::pair<int32_t, Instruction *>> m_WritingOrder;
     bool m_BranchFound = false;
     struct CommonDataBus
     {
