@@ -173,6 +173,8 @@ void Controller::IssueInstructions()
                         m_BranchFound = true;
                         m_BranchInstructions.push(&currentInst);
                     }
+
+                    m_WritingOrder.push_back({i, &currentInst});
                     break;
                 }
             }
@@ -250,8 +252,9 @@ void Controller::ExecuteInstructions()
 
 void Controller::WriteBackInstructions()
 {
-    for (int st = 0; st < m_Stations.size(); st++)
+    for (int order = 0; order < m_WritingOrder.size(); order++)
     {
+        int st = m_WritingOrder[order].first;
         if (m_Stations[st].IsBusy())
         {
             Instruction &currentInst = *m_Stations[st].m_UnderWorkInstruction;
@@ -320,6 +323,14 @@ void Controller::WriteBackInstructions()
                                     i--;
                                 }
                             }
+                            for (int i = 0; i < m_WritingOrder.size(); i++)
+                            {
+                                if (currentInst.m_PC < m_WritingOrder[i].second->getPC())
+                                {
+                                    m_WritingOrder.erase(m_WritingOrder.begin() + i);
+                                    i--;
+                                }
+                            }
                         }
                         else
                         {
@@ -364,6 +375,7 @@ void Controller::WriteBackInstructions()
                     station.m_UnderWorkInstruction->writeBack = {true, m_CycleNumber};
                     station.Clean();
                     m_NumberOfInstructions++;
+                    m_WritingOrder.erase(m_WritingOrder.begin() + order);
                     break;
                 }
             }

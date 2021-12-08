@@ -496,10 +496,9 @@ void Application::InstructionsMemoryImGuiLayer()
         ImGui::Columns(1);
         ImGui::Separator();
         ImGui::EndChild();
-        int32_t pcValue = this->PC;
         for (int i = 0; i < m_InstructionMemory.size(); i++)
         {
-            m_InstructionMemory[i].ImGuiLayer(pcValue++, i == m_Top, true);
+            m_InstructionMemory[i].ImGuiLayer(PC, i == m_Top, true);
         }
     }
     ImGui::EndChild();
@@ -541,11 +540,10 @@ void Application::InstructionsQueueImGuiLayer()
         ImGui::Text("Imm");
         ImGui::NextColumn();
         ImGui::Separator();
-        int32_t pcValue = this->PC;
         ImGui::EndChild();
         for (int i = 0; i < m_InstructionsQueue.size(); i++)
         {
-            m_InstructionsQueue[i].ImGuiLayer(pcValue++, 0, false);
+            m_InstructionsQueue[i].ImGuiLayer(PC, 0, false);
         }
     }
     ImGui::EndChild();
@@ -723,16 +721,17 @@ void Application::LogToFile(bool addFlushed)
     output << "Branch misprediction percentage: " << branchMisPri << "%" << std::endl;
     int32_t spaces = 20;
     output << "\nGreen Table:\n";
-    output << std::left << std::setfill('-') << std::setw(116) << "";
+    output << std::left << std::setfill('-') << std::setw(125) << "";
     output << std::setfill(' ') << std::endl;
-    output << std::left << "| " << std::setw(spaces) << "Instruction"
+    output << std::left << "| " << std::setw(6) << "PC"
+           << " | " << std::setw(spaces) << "Instruction"
            << " | " << std::setw(spaces) << "Issue"
            << " | " << std::setw(spaces) << "Execution Start"
            << " | " << std::setw(spaces) << "Executation End"
            << " | " << std::setw(spaces) << "Write back"
-           << " | " << std::endl;
+           << " |" << std::endl;
 
-    output << std::left << std::setfill('-') << std::setw(116) << "";
+    output << std::left << std::setfill('-') << std::setw(125) << "";
     output << std::setfill(' ') << std::endl;
 
     for (int i = 0; i < m_InstructionsQueue.size(); i++)
@@ -742,17 +741,24 @@ void Application::LogToFile(bool addFlushed)
             if (!addFlushed)
                 continue;
             else
-                output << "| " << std::setw(spaces) << m_InstructionsQueue[i].str << " | " << std::setw(spaces) << "FLUSHED"
+                output << "| " << std::setw(6) << m_InstructionsQueue[i].getPC() + PC << " | " << std::setw(spaces) << m_InstructionsQueue[i].str << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::setw(spaces) << "FLUSHED"
                        << " | " << std::setw(spaces) << "FLUSHED"
-                       << " | " << std::endl;
+                       << " |" << std::endl;
         }
         else
-            output << "| " << std::setw(spaces) << m_InstructionsQueue[i].str << " | " << std::setw(spaces) << m_InstructionsQueue[i].issue.second << " | "
+            output << "| " << std::setw(6) << m_InstructionsQueue[i].getPC() + PC
+                   << " | " << std::setw(spaces) << m_InstructionsQueue[i].str
+                   << " | " << std::setw(spaces) << m_InstructionsQueue[i].issue.second << " | "
                    << std::setw(spaces) << m_InstructionsQueue[i].startExecute.second << " | "
                    << std::setw(spaces) << m_InstructionsQueue[i].execute.second << " | "
-                   << std::setw(spaces) << m_InstructionsQueue[i].writeBack.second << " | " << std::endl;
+                   << std::setw(spaces) << m_InstructionsQueue[i].writeBack.second << " |" << std::endl;
+    }
+    if (m_InstructionsQueue.size() >= 1)
+    {
+        output << std::left << std::setfill('-') << std::setw(125) << "";
+        output << std::setfill(' ') << std::endl;
     }
     output.close();
 }

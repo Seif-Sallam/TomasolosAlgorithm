@@ -33,6 +33,7 @@ struct Instruction
         if (type == Unit::SW || type == Unit::LW)
             m_MaxCycleNumber += 2;
     }
+    inline int32_t getPC() { return m_PC; }
     void Advance();
     bool Finished();
     void Clean();
