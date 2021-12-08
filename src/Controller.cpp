@@ -26,23 +26,17 @@ void Controller::Advance()
     m_CycleNumber++;
     //Issuing the instructions
     IssueInstructions();
-    while (m_RegFile.m_ProducingUnit[0].front() != "N")
-        m_RegFile.m_ProducingUnit[0].pop_front();
-    m_RegFile.m_RegisterValue[0] = 0;
-    //Executing instructions
+    CleanR0();
+
     //Writing back
     WriteBackInstructions();
-    while (m_RegFile.m_ProducingUnit[0].front() != "N")
-        m_RegFile.m_ProducingUnit[0].pop_front();
-    m_RegFile.m_RegisterValue[0] = 0;
+    CleanR0();
 
     //Common Data Bus
     CommonDataBusWork();
 
     ExecuteInstructions();
-    while (m_RegFile.m_ProducingUnit[0].front() != "N")
-        m_RegFile.m_ProducingUnit[0].pop_front();
-    m_RegFile.m_RegisterValue[0] = 0;
+    CleanR0();
 }
 bool Controller::OperandsReady(ReservationStation &station)
 {
@@ -133,7 +127,6 @@ void Controller::IssueInstructions()
                     {
                         m_Stations[i].Qj = m_RegFile.m_ProducingUnit[rs1].front();
                     }
-                    // if res2 is also free
                     if (type == Unit::LW || type == Unit::ADDI || type == Unit::JAL)
                     {
                         m_Stations[i].Vk = currentInst.imm;
@@ -141,6 +134,7 @@ void Controller::IssueInstructions()
                     }
                     else
                     {
+                        // if rs2 is also free
                         if (m_RegFile.m_ProducingUnit[rs2].front() == "N")
                         {
                             m_Stations[i].Vk = m_RegFile.m_RegisterValue[rs2];
@@ -160,14 +154,11 @@ void Controller::IssueInstructions()
                     currentInst.currentStage = Stage::EXECUTE;
                     m_Top++;
                     if (currentInst.type == Unit::JAL || currentInst.type == Unit::JALR)
-                    {
                         //We stop any instruction from issuing
                         m_InstructionIssuing = false;
-                    }
                     if (m_BranchFound == true)
-                    {
                         m_AfterBranchInstructions.push_back({m_InstructionsQ.size() - 1, &currentInst});
-                    }
+
                     if (currentInst.type == Unit::BEQ)
                     {
                         m_BranchFound = true;
@@ -187,62 +178,89 @@ void Controller::ExecuteInstructions()
     for (int i = 0; i < m_Stations.size(); i++)
     {
         ReservationStation &station = m_Stations[i];
+        if (station.GetType() == Unit::LW || station.GetType() == Unit::SW)
+        {
+            if (station.IsBusy())
+            {
+                Instruction &inst = *station.m_UnderWorkInstruction;
+                if (!AfterBranchInstruction(inst) && inst.issue.second != m_CycleNumber && inst.currentStage == Stage::EXECUTE)
+                {
+
+                    if (station.Qj == "N")
+                    {
+                        if (inst.m_CurrentCycle <= 1)
+                        {
+                            inst.Advance();
+                            if (inst.m_CurrentCycle == 2)
+                            {
+                                station.A = inst.imm + station.Vj;
+                                inst.startExecute = {true, m_CycleNumber};
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (int i = 0; i < m_Stations.size(); i++)
+    {
+        ReservationStation &station = m_Stations[i];
         if (station.IsBusy()) // Has an instruction inside it
         {
-            Instruction &underWorkInstruction = *station.m_UnderWorkInstruction;
+            Instruction &currentInst = *station.m_UnderWorkInstruction;
 
-            if (!AfterBranchInstruction(underWorkInstruction))
+            if (!AfterBranchInstruction(currentInst) && (currentInst.issue.second != m_CycleNumber) && (currentInst.currentStage == Stage::EXECUTE))
             {
-                int rs1, rs2;
-                rs1 = underWorkInstruction.rs1;
-                rs2 = underWorkInstruction.rs2;
-                //We are executing the instruction which we have just issued
-                if (underWorkInstruction.issue.second != m_CycleNumber)
+                // if (station.m_Type == Unit::SW || station.m_Type == Unit::LW)
+                // {
+                //     if (station.Qj == "N")
+                //         if (currentInst.m_CurrentCycle <= 1)
+                //         {
+                //             currentInst.Advance();
+                //             if (currentInst.m_CurrentCycle == 2)
+                //             {
+                //                 std::cout << "Calculating Address\n";
+                //                 station.A = currentInst.imm + station.Vj;
+                //                 currentInst.startExecute = {true, m_CycleNumber};
+                //             }
+                //         }
+                // }
+                // Check if the operands are ready, then we initiate execuation
+                if (OperandsReady(station))
                 {
-                    //Instruction was NOT already executed
-                    if (underWorkInstruction.currentStage == Stage::EXECUTE)
+                    if (station.m_Type != Unit::SW && station.m_Type != Unit::LW)
+                        station.m_InitiateExecutation = true;
+                    else
                     {
-                        bool dep = false;
-                        if (station.m_Type == Unit::SW || station.m_Type == Unit::LW)
+                        if (currentInst.m_CurrentCycle == 2)
                         {
-                            station.A = underWorkInstruction.imm + station.Vj;
-                            dep = CheckDependancy(station.A, i, underWorkInstruction.m_PC);
-                            if (underWorkInstruction.m_CurrentCycle == 0)
-                                underWorkInstruction.Advance();
-                        }
-                        // Check if the operands are ready, then we initiate execuation
-                        if (OperandsReady(station) && !dep)
-                        {
-                            station.m_InitiateExecutation = true;
-                        }
-                        if (station.m_InitiateExecutation)
-                        {
-                            if (underWorkInstruction.m_CurrentCycle == 0)
+                            if (!CheckDependancy(station.A, i, currentInst.m_PC))
                             {
-                                underWorkInstruction.startExecute = {true, m_CycleNumber};
-                            }
-                            if ((underWorkInstruction.type == Unit::LW || underWorkInstruction.type == Unit::SW) && underWorkInstruction.m_CurrentCycle == 1)
-                            {
-                                underWorkInstruction.startExecute = {true, m_CycleNumber};
-                            }
-                            //If we are finished, then set that we executed the instruction and put its cycle number
-                            if (underWorkInstruction.Finished())
-                            {
-                                underWorkInstruction.execute = {true, m_CycleNumber};
-                                underWorkInstruction.currentStage = Stage::WRITE_BACK;
-                            }
-                            else
-                            {
-                                underWorkInstruction.Advance();
-                                // Is it the first cycle? if yes compute the target or the address
-                                if (underWorkInstruction.m_CurrentCycle == 1 && underWorkInstruction.type == Unit::BEQ)
-                                {
-                                    station.A = underWorkInstruction.imm;
-                                }
-                                else
-                                    station.Execute(m_Memory);
+                                station.m_InitiateExecutation = true;
                             }
                         }
+                    }
+                }
+                if (station.m_InitiateExecutation)
+                {
+                    if (currentInst.m_CurrentCycle == 0)
+                    {
+                        currentInst.startExecute = {true, m_CycleNumber};
+                    }
+                    // std::cout << "Current instruction: " << currentInst.m_CurrentCycle << std::endl;
+                    //If we are finished, then set that we executed the instruction and put its cycle number
+                    currentInst.Advance();
+                    // Is it the first cycle? if yes compute the target or the address
+                    if (currentInst.m_CurrentCycle == 1 && currentInst.type == Unit::BEQ)
+                    {
+                        station.A = currentInst.imm + m_Top + 1;
+                    }
+                    else
+                        station.Execute(m_Memory);
+                    if (currentInst.Finished())
+                    {
+                        currentInst.execute = {true, m_CycleNumber};
+                        currentInst.currentStage = Stage::WRITE_BACK;
                     }
                 }
             }
@@ -407,18 +425,35 @@ void Controller::CommonDataBusWork()
 
 bool Controller::CheckDependancy(int32_t addr, int32_t stationNumber, int32_t PC)
 {
+    auto myType = m_Stations[stationNumber].GetType();
     for (int i = 0; i < m_Stations.size(); i++)
     {
-        if (m_Stations[i].IsBusy() && (m_Stations[i].GetType() == Unit::SW || m_Stations[i].GetType() == Unit::LW))
-            if (stationNumber != i) // we are not at the same station
-            {
-                auto &station = m_Stations[i];
-                if (station.A == addr)
+        if (myType == Unit::SW)
+        {
+            if (m_Stations[i].IsBusy() && (m_Stations[i].GetType() == Unit::SW || m_Stations[i].GetType() == Unit::LW))
+                if (stationNumber != i) // we are not at the same station
                 {
-                    if (station.m_UnderWorkInstruction->m_PC < PC)
-                        return true;
+                    auto &station = m_Stations[i];
+                    if (station.A == addr)
+                    {
+                        if (station.m_UnderWorkInstruction->m_PC < PC)
+                            return true;
+                    }
                 }
-            }
+        }
+        else if (myType == Unit::LW)
+        {
+            if (m_Stations[i].IsBusy() && (m_Stations[i].GetType() == Unit::SW))
+                if (stationNumber != i) // we are not at the same station
+                {
+                    auto &station = m_Stations[i];
+                    if (station.A == addr)
+                    {
+                        if (station.m_UnderWorkInstruction->m_PC < PC)
+                            return true;
+                    }
+                }
+        }
     }
     return false;
 }
@@ -446,4 +481,11 @@ bool Controller::WAWDep(Instruction &inst)
         }
     }
     return false;
+}
+
+void Controller::CleanR0()
+{
+    while (m_RegFile.m_ProducingUnit[0].front() != "N")
+        m_RegFile.m_ProducingUnit[0].pop_front();
+    m_RegFile.m_RegisterValue[0] = 0;
 }

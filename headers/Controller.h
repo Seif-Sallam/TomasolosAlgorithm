@@ -20,6 +20,7 @@ public:
     inline int32_t GetNumberOfInstructions() { return m_NumberOfInstructions; }
     bool IsCorrectUnit(Unit stationType, Unit instructionType);
     void Clean();
+    void CleanR0();
 
 private:
     bool OperandsReady(ReservationStation &inst);

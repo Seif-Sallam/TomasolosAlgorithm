@@ -133,6 +133,10 @@ void Instruction::Parse()
         type = Unit::ABS;
     else if (typeStr == "DIV")
         type = Unit::DIV;
+    else
+    {
+        type = Unit::NAN;
+    }
 
     if (type == Unit::ADD || type == Unit::DIV)
     {
@@ -159,6 +163,11 @@ void Instruction::Parse()
         rs1 = strCopy[index + 1] - '0';
         str = ((type == Unit::JALR) ? "JALR R" : ((type == Unit::NEG) ? "NEG R" : "ABS R")) + std::to_string(rd) + ", R" + std::to_string(rs1);
     }
+
+    if (type == Unit::NAN)
+    {
+        str = "NAN UNVALID INSTRUCITON";
+    }
 }
 
 void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
@@ -174,41 +183,42 @@ void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
     ImGui::NextColumn();
     ImGui::Text(str.c_str(), "");
     ImGui::NextColumn();
-    switch (type)
-    {
-    case Unit::ADD:
-        ImGui::Text("ADD");
-        break;
-    case Unit::ADDI:
-        ImGui::Text("ADDI");
-        break;
-    case Unit::LW:
-        ImGui::Text("LOAD");
-        break;
-    case Unit::SW:
-        ImGui::Text("STORE");
-        break;
-    case Unit::BEQ:
-        ImGui::Text("BEQ");
-        break;
-    case Unit::JAL:
-        ImGui::Text("JAL");
-        break;
-    case Unit::JALR:
-        ImGui::Text("JALR");
-        break;
-    case Unit::NEG:
-        ImGui::Text("NEG");
-        break;
-    case Unit::ABS:
-        ImGui::Text("ABS");
-        break;
-    case Unit::DIV:
-        ImGui::Text("DIV");
-        break;
-    default:
-        break;
-    }
+    // switch (type)
+    // {
+    // case Unit::ADD:
+    //     ImGui::Text("ADD");
+    //     break;
+    // case Unit::ADDI:
+    //     ImGui::Text("ADDI");
+    //     break;
+    // case Unit::LW:
+    //     ImGui::Text("LOAD");
+    //     break;
+    // case Unit::SW:
+    //     ImGui::Text("STORE");
+    //     break;
+    // case Unit::BEQ:
+    //     ImGui::Text("BEQ");
+    //     break;
+    // case Unit::JAL:
+    //     ImGui::Text("JAL");
+    //     break;
+    // case Unit::JALR:
+    //     ImGui::Text("JALR");
+    //     break;
+    // case Unit::NEG:
+    //     ImGui::Text("NEG");
+    //     break;
+    // case Unit::ABS:
+    //     ImGui::Text("ABS");
+    //     break;
+    // case Unit::DIV:
+    //     ImGui::Text("DIV");
+    //     break;
+    // default:
+    //     break;
+    // }
+    ImGui::Text(s_UnitName[uint32_t(type)].c_str(), "");
     ImGui::NextColumn();
     if (!m_Flushed)
     {
