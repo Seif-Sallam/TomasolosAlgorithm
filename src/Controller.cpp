@@ -249,7 +249,8 @@ void Controller::ExecuteInstructions()
                     }
                     // std::cout << "Current instruction: " << currentInst.m_CurrentCycle << std::endl;
                     //If we are finished, then set that we executed the instruction and put its cycle number
-                    currentInst.Advance();
+                    if (!((station.GetType() == Unit::LW || station.GetType() == Unit::SW) && currentInst.startExecute.second == m_CycleNumber))
+                        currentInst.Advance();
                     // Is it the first cycle? if yes compute the target or the address
                     if (currentInst.m_CurrentCycle == 1 && currentInst.type == Unit::BEQ)
                     {
