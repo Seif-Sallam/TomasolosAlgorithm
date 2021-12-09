@@ -432,14 +432,16 @@ void Application::RegisterFileImGuiLayer()
 
     ImGui::PopTextWrapPos();
 
-    for (int i = 0; i < int32_t(Unit::UNIT_COUNT); i++)
-        ImGui::SliderInt(s_UnitName[i].c_str(), &s_CyclesCount[i], 1, 100);
+    for (int i = 0; i < int32_t(Unit::UNIT_COUNT) - 1; i++)
+        ImGui::SliderInt(InstructionsUnitCycles::s_UnitName[i].c_str(), &InstructionsUnitCycles::s_CyclesCount[i], 1, 100);
 
     ImGui::Text("Saving will reset the simulation");
     if (ImGui::Button("Save Data"))
     {
-        for (int i = 0; i < m_InstructionsQueue.size(); i++)
-            m_InstructionsQueue[i].UpdateCycleCount();
+        for (int i = 0; i < m_InstructionMemory.size(); i++)
+        {
+            m_InstructionMemory[i].UpdateCycleCount();
+        }
         Reset();
     }
     ImGui::End();

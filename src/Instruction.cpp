@@ -8,9 +8,9 @@ Instruction::Instruction(const std::string &str, int PC)
 {
     Parse();
 
-    issue = {false, -1};
-    execute = {false, -1};
-    writeBack = {false, -1};
+    issue = {false, 1};
+    execute = {false, 1};
+    writeBack = {false, 1};
     m_CurrentCycle = 0;
     UpdateCycleCount();
 }
@@ -218,7 +218,7 @@ void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
     // default:
     //     break;
     // }
-    ImGui::Text(s_UnitName[uint32_t(type)].c_str(), "");
+    ImGui::Text(InstructionsUnitCycles::s_UnitName[uint32_t(type)].c_str(), "");
     ImGui::NextColumn();
     if (!m_Flushed)
     {
@@ -264,10 +264,10 @@ void Instruction::Advance() { m_CurrentCycle++; }
 void Instruction::Clean()
 {
     currentStage = Stage::ISSUE;
-    execute = {false, 0};
-    issue = {false, 0};
-    writeBack = {false, 0};
-    m_CurrentCycle = 0;
+    execute = {false, 1};
+    issue = {false, 1};
+    writeBack = {false, 1};
+    m_CurrentCycle = 1;
 }
 
 void Instruction::MarkAsFlushed()
@@ -278,4 +278,13 @@ void Instruction::MarkAsFlushed()
 bool Instruction::IsFlushed()
 {
     return m_Flushed;
+}
+
+void Instruction::UpdateCycleCount()
+{
+    m_MaxCycleNumber = InstructionsUnitCycles::s_CyclesCount[(int)(type)];
+    if (type == Unit::JAL || type == Unit::JALR || type == Unit::BEQ)
+        m_MaxCycleNumber++;
+    if (type == Unit::SW || type == Unit::LW)
+        m_MaxCycleNumber += 2;
 }

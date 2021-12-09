@@ -40,6 +40,7 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
             Essentially if the instruction we are executing is not in its last cycle
             Then we just advance :)
     */
+
     if (m_UnderWorkInstruction->Finished())
     {
         auto type = m_UnderWorkInstruction->type;

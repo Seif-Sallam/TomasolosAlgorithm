@@ -1,4 +1,6 @@
 #pragma once
+#include <iostream>
+#include <string>
 
 enum class Unit
 {
@@ -16,6 +18,13 @@ enum class Unit
     UNIT_COUNT,
 };
 
-static int32_t s_CyclesCount[uint32_t(Unit::UNIT_COUNT)]{2, 2, 1, 1, 1, 2, 2, 3, 2, 10, 0};
-static std::string s_UnitName[uint32_t(Unit::UNIT_COUNT)] = {"LOAD", "STORE", "BEQ", "JAL", "JALR",
-                                                             "ADD", "ADDI", "NEG", "ABS", "DIV", "NAN"};
+class InstructionsUnitCycles
+{
+public:
+    static int32_t s_CyclesCount[uint32_t(Unit::UNIT_COUNT)];
+    static std::string s_UnitName[uint32_t(Unit::UNIT_COUNT)];
+
+private:
+    InstructionsUnitCycles() = default;
+    static InstructionsUnitCycles s_Instance;
+};
