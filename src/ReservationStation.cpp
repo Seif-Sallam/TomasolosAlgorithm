@@ -85,7 +85,7 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
         break;
         case Unit::NEG:
         {
-            result = ~Vj;
+            result = ~Vj + 1;
         }
         break;
         case Unit::ABS:
