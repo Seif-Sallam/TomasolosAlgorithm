@@ -566,12 +566,10 @@ void Application::InstructionExecutationLayer()
         ImGui::SameLine();
         HelpMarker("This window shows the prograss of the provieded program to the instructions and when it was issues, started executation and when it finished executation and when it wrote back.\n"
                    "Click the button Log to file to save the data to the file \"Green_Table.txt\". It will also contain the number of cycles, IPC, and the branch misprediction percentage.\n");
-        int lastInstructionCycle = 0;
-        if (m_InstructionsQueue.size() > 0)
-            lastInstructionCycle = m_InstructionsQueue.back().writeBack.second;
+        int lastInstructionCycle = m_Controller->GetLastInstructionWrote();
         int numberOfInstructions = m_Controller->GetNumberOfInstructions();
-        if (numberOfInstructions != 0)
-            IPC = (double)lastInstructionCycle / (double)numberOfInstructions;
+        if (lastInstructionCycle != 0)
+            IPC = (double)numberOfInstructions / (double)lastInstructionCycle;
         else
             IPC = 0.0;
         ImGui::Text("IPC: %.1f", IPC);

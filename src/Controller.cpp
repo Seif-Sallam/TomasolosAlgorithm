@@ -211,20 +211,6 @@ void Controller::ExecuteInstructions()
 
             if (!AfterBranchInstruction(currentInst) && (currentInst.issue.second != m_CycleNumber) && (currentInst.currentStage == Stage::EXECUTE))
             {
-                // if (station.m_Type == Unit::SW || station.m_Type == Unit::LW)
-                // {
-                //     if (station.Qj == "N")
-                //         if (currentInst.m_CurrentCycle <= 1)
-                //         {
-                //             currentInst.Advance();
-                //             if (currentInst.m_CurrentCycle == 2)
-                //             {
-                //                 std::cout << "Calculating Address\n";
-                //                 station.A = currentInst.imm + station.Vj;
-                //                 currentInst.startExecute = {true, m_CycleNumber};
-                //             }
-                //         }
-                // }
                 // Check if the operands are ready, then we initiate execuation
                 if (OperandsReady(station))
                 {
@@ -247,7 +233,6 @@ void Controller::ExecuteInstructions()
                     {
                         currentInst.startExecute = {true, m_CycleNumber};
                     }
-                    // std::cout << "Current instruction: " << currentInst.m_CurrentCycle << std::endl;
                     //If we are finished, then set that we executed the instruction and put its cycle number
                     if (!((station.GetType() == Unit::LW || station.GetType() == Unit::SW) && currentInst.startExecute.second == m_CycleNumber))
                         currentInst.Advance();
@@ -395,6 +380,7 @@ void Controller::WriteBackInstructions()
                     station.Clean();
                     m_NumberOfInstructions++;
                     m_WritingOrder.erase(m_WritingOrder.begin() + order);
+                    m_LastInstructionWrote = m_CycleNumber;
                     break;
                 }
             }
@@ -489,4 +475,9 @@ void Controller::CleanR0()
     while (m_RegFile.m_ProducingUnit[0].front() != "N")
         m_RegFile.m_ProducingUnit[0].pop_front();
     m_RegFile.m_RegisterValue[0] = 0;
+}
+
+int32_t Controller::GetLastInstructionWrote()
+{
+    return m_LastInstructionWrote;
 }

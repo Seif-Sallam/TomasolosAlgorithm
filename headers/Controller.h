@@ -21,6 +21,7 @@ public:
     bool IsCorrectUnit(Unit stationType, Unit instructionType);
     void Clean();
     void CleanR0();
+    int32_t GetLastInstructionWrote();
 
 private:
     bool OperandsReady(ReservationStation &inst);
@@ -55,4 +56,5 @@ private:
     int32_t m_BranchInstructionsCount = 0;
     int32_t m_MisPredictions = 0;
     int32_t m_NumberOfInstructions = 0;
+    int32_t m_LastInstructionWrote = 0;
 };
