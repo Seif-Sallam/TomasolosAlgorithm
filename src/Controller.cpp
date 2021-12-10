@@ -352,10 +352,6 @@ void Controller::WriteBackInstructions()
                                 {
                                     if (inst->m_PC > currentInst.m_PC)
                                     {
-                                        if (inst->type == Unit::JAL || inst->type == Unit::JALR)
-                                        {
-                                            m_InstructionIssuing = true;
-                                        }
                                         m_AfterBranchInstructions.erase(m_AfterBranchInstructions.begin() + i);
                                         i--;
                                     }

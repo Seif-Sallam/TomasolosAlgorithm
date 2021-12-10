@@ -31,8 +31,8 @@ Application::Application()
     m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
     m_InstructionsQueue.reserve(3000);
     m_Controller = new Controller(m_Top, m_InstructionsQueue, m_InstructionMemory, m_Stations, m_RegFile, m_Memory);
-
     PC = 0;
+    LoadData("DefaultProgram.txt");
 }
 
 void Application::Run()
@@ -681,6 +681,7 @@ void Application::Reset()
 {
     m_Controller->GetCycleNumber() = -1;
     m_Top = 0;
+    m_Memory.clear();
     m_InstructionsQueue.clear();
     m_InstructionsQueue.reserve(3000);
     for (int i = 0; i < m_Stations.size(); i++)
