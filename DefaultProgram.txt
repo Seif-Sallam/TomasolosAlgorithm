@@ -1,5 +1,5 @@
-# Add comment by putting # in the beginning of the line
-# Do not put # in the middle of the line or the end of it as it will cause the program to crash
+# Add comment by putting # in the beginning of the line or the end of the line of an instruction
+# Do not put # in the middle of the line as it will cause the program to crash
 
 # Initialize both r1 and r2 with values
 addi r1, r0, 10
