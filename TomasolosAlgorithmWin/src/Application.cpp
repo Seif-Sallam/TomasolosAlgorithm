@@ -31,8 +31,11 @@ Application::Application()
     m_Stations.push_back(ReservationStation("DIV", &m_Top, Unit::DIV));
     m_InstructionsQueue.reserve(3000);
     m_Controller = new Controller(m_Top, m_InstructionsQueue, m_InstructionMemory, m_Stations, m_RegFile, m_Memory);
-
     PC = 0;
+    if (LoadData("DefaultProgram.txt"))
+    {
+        std::cerr << "Couldn't open the default program\n";
+    }
 }
 
 void Application::Run()
@@ -432,14 +435,16 @@ void Application::RegisterFileImGuiLayer()
 
     ImGui::PopTextWrapPos();
 
-    for (int i = 0; i < int32_t(Unit::UNIT_COUNT); i++)
-        ImGui::SliderInt(s_UnitName[i].c_str(), &s_CyclesCount[i], 1, 100);
+    for (int i = 0; i < int32_t(Unit::UNIT_COUNT) - 1; i++)
+        ImGui::SliderInt(InstructionsUnitCycles::s_UnitName[i].c_str(), &InstructionsUnitCycles::s_CyclesCount[i], 1, 100);
 
     ImGui::Text("Saving will reset the simulation");
     if (ImGui::Button("Save Data"))
     {
-        for (int i = 0; i < m_InstructionsQueue.size(); i++)
-            m_InstructionsQueue[i].UpdateCycleCount();
+        for (int i = 0; i < m_InstructionMemory.size(); i++)
+        {
+            m_InstructionMemory[i].UpdateCycleCount();
+        }
         Reset();
     }
     ImGui::End();
@@ -564,12 +569,10 @@ void Application::InstructionExecutationLayer()
         ImGui::SameLine();
         HelpMarker("This window shows the prograss of the provieded program to the instructions and when it was issues, started executation and when it finished executation and when it wrote back.\n"
                    "Click the button Log to file to save the data to the file \"Green_Table.txt\". It will also contain the number of cycles, IPC, and the branch misprediction percentage.\n");
-        int lastInstructionCycle = 0;
-        if (m_InstructionsQueue.size() > 0)
-            lastInstructionCycle = m_InstructionsQueue.back().writeBack.second;
+        int lastInstructionCycle = m_Controller->GetLastInstructionWrote();
         int numberOfInstructions = m_Controller->GetNumberOfInstructions();
-        if (numberOfInstructions != 0)
-            IPC = (double)lastInstructionCycle / (double)numberOfInstructions;
+        if (lastInstructionCycle != 0)
+            IPC = (double)numberOfInstructions / (double)lastInstructionCycle;
         else
             IPC = 0.0;
         ImGui::Text("IPC: %.1f", IPC);
@@ -681,6 +684,7 @@ void Application::Reset()
 {
     m_Controller->GetCycleNumber() = -1;
     m_Top = 0;
+    m_Memory.clear();
     m_InstructionsQueue.clear();
     m_InstructionsQueue.reserve(3000);
     for (int i = 0; i < m_Stations.size(); i++)
@@ -731,7 +735,7 @@ void Application::LogToFile(bool addFlushed)
            << " | " << std::setw(spaces) << "Write back"
            << " |" << std::endl;
 
-    output << std::left << std::setfill('-') << std::setw(125) << "";
+    output << std::left << std::setfill('=') << std::setw(125) << "";
     output << std::setfill(' ') << std::endl;
 
     for (int i = 0; i < m_InstructionsQueue.size(); i++)
@@ -760,5 +764,20 @@ void Application::LogToFile(bool addFlushed)
         output << std::left << std::setfill('-') << std::setw(125) << "";
         output << std::setfill(' ') << std::endl;
     }
+
+    output << "\n\nMemory Content: \n\n";
+    output << std::left << std::setfill('-') << std::setw(47) << "";
+    output << std::setfill(' ') << std::endl;
+    output << std::left << "| " << std::setw(spaces) << "Address"
+           << " | " << std::setw(spaces) << "Value"
+           << " |" << std::endl;
+    output << std::left << std::setfill('=') << std::setw(47) << "";
+    output << std::setfill(' ') << std::endl;
+    for (auto &elm : m_Memory)
+    {
+        output << std::left << "| " << std::setw(spaces) << elm.first << " | " << std::setw(spaces) << elm.second << " |" << std::endl;
+    }
+    output << std::left << std::setfill('-') << std::setw(47) << "";
+    output << std::setfill(' ') << std::endl;
     output.close();
 }

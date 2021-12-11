@@ -169,6 +169,7 @@
     <ClCompile Include="src\Imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Instruction.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Operations.cpp" />
     <ClCompile Include="src\RegisterFile.cpp" />
     <ClCompile Include="src\ReservationStation.cpp" />
   </ItemGroup>

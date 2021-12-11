@@ -8,9 +8,9 @@ Instruction::Instruction(const std::string &str, int PC)
 {
     Parse();
 
-    issue = {false, -1};
-    execute = {false, -1};
-    writeBack = {false, -1};
+    issue = {false, 1};
+    execute = {false, 1};
+    writeBack = {false, 1};
     m_CurrentCycle = 0;
     UpdateCycleCount();
 }
@@ -64,26 +64,42 @@ void Instruction::Parse()
     imm = 0;
     rs1 = 0;
     rs2 = 0;
-    if (typeStr == "LOAD")
+    if (typeStr == "LOAD" || typeStr == "LW")
     {
         type = Unit::LW;
         index = strCopy.find(",");
         rd = strCopy[1] - '0';
         strCopy = strCopy.substr(index + 1);
         int32_t index2 = strCopy.find("(");
-        imm = stoi(strCopy.substr(0, index2));
+        try
+        {
+            imm = stoi(strCopy.substr(0, index2));
+        }
+        catch (std::invalid_argument e)
+        {
+            std::cerr << "Invalid argument found in instruction: " << str << " With PC: " << m_PC << std::endl;
+            imm = 0;
+        }
         index2 = strCopy.find("R");
         rs1 = strCopy[index2 + 1] - '0';
         str = "LOAD R" + std::to_string(rd) + ", " + std::to_string(imm) + "(R" + std::to_string(rs1) + ")";
     }
-    else if (typeStr == "STORE")
+    else if (typeStr == "STORE" || typeStr == "SW")
     {
         type = Unit::SW;
         index = strCopy.find(",");
         rs2 = strCopy[1] - '0';
         strCopy = strCopy.substr(index + 1);
         int32_t index2 = strCopy.find("(");
-        imm = stoi(strCopy.substr(0, index2));
+        try
+        {
+            imm = stoi(strCopy.substr(0, index2));
+        }
+        catch (std::invalid_argument e)
+        {
+            std::cerr << "Invalid argument found in instruction: " << str << " With PC: " << m_PC << std::endl;
+            imm = 0;
+        }
         index2 = strCopy.find("R");
         rs1 = strCopy[index2 + 1] - '0';
         str = "STORE R" + std::to_string(rs2) + ", " + std::to_string(imm) + "(R" + std::to_string(rs1) + ")";
@@ -97,7 +113,15 @@ void Instruction::Parse()
         index = strCopy.find("R");
         rs2 = strCopy[index + 1] - '0';
         index = strCopy.find(",");
-        imm = stoi(strCopy.substr(index + 1));
+        try
+        {
+            imm = stoi(strCopy.substr(index + 1));
+        }
+        catch (std::invalid_argument e)
+        {
+            std::cerr << "Invalid argument found in instruction: " << str << " With PC: " << m_PC << std::endl;
+            imm = 0;
+        }
         str = "BEQ R" + std::to_string(rs1) + ", " + "R" + std::to_string(rs2) + ", " + std::to_string(imm);
     }
     else if (typeStr == "JAL")
@@ -106,7 +130,15 @@ void Instruction::Parse()
         index = strCopy.find("R");
         rd = strCopy[index + 1] - '0';
         index = strCopy.find(",");
-        imm = stoi(strCopy.substr(index + 1));
+        try
+        {
+            imm = stoi(strCopy.substr(index + 1));
+        }
+        catch (std::invalid_argument e)
+        {
+            std::cerr << "Invalid argument found in instruction: " << str << " With PC: " << m_PC << std::endl;
+            imm = 0;
+        }
         str = "JAL R" + std::to_string(rd) + ", " + std::to_string(imm);
     }
     else if (typeStr == "JALR")
@@ -124,7 +156,16 @@ void Instruction::Parse()
         rs1 = strCopy[index + 1] - '0';
         index = strCopy.find(",");
         strCopy = strCopy.substr(index + 1);
-        imm = stoi(strCopy);
+        try
+        {
+            imm = stoi(strCopy);
+        }
+        catch (std::invalid_argument e)
+        {
+            std::cerr << "Invalid argument found in instruction: " << str << " With PC: " << m_PC << std::endl;
+            imm = 0;
+        }
+
         str = "ADDI R" + std::to_string(rd) + ", R" + std::to_string(rs1) + ", " + std::to_string(imm);
     }
     else if (typeStr == "NEG")
@@ -133,6 +174,10 @@ void Instruction::Parse()
         type = Unit::ABS;
     else if (typeStr == "DIV")
         type = Unit::DIV;
+    else
+    {
+        type = Unit::INVALID;
+    }
 
     if (type == Unit::ADD || type == Unit::DIV)
     {
@@ -159,6 +204,11 @@ void Instruction::Parse()
         rs1 = strCopy[index + 1] - '0';
         str = ((type == Unit::JALR) ? "JALR R" : ((type == Unit::NEG) ? "NEG R" : "ABS R")) + std::to_string(rd) + ", R" + std::to_string(rs1);
     }
+
+    if (type == Unit::INVALID)
+    {
+        str = "INVALID INSTRUCITON";
+    }
 }
 
 void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
@@ -174,41 +224,7 @@ void Instruction::ImGuiLayer(int pc, bool top, bool showTop) const
     ImGui::NextColumn();
     ImGui::Text(str.c_str(), "");
     ImGui::NextColumn();
-    switch (type)
-    {
-    case Unit::ADD:
-        ImGui::Text("ADD");
-        break;
-    case Unit::ADDI:
-        ImGui::Text("ADDI");
-        break;
-    case Unit::LW:
-        ImGui::Text("LOAD");
-        break;
-    case Unit::SW:
-        ImGui::Text("STORE");
-        break;
-    case Unit::BEQ:
-        ImGui::Text("BEQ");
-        break;
-    case Unit::JAL:
-        ImGui::Text("JAL");
-        break;
-    case Unit::JALR:
-        ImGui::Text("JALR");
-        break;
-    case Unit::NEG:
-        ImGui::Text("NEG");
-        break;
-    case Unit::ABS:
-        ImGui::Text("ABS");
-        break;
-    case Unit::DIV:
-        ImGui::Text("DIV");
-        break;
-    default:
-        break;
-    }
+    ImGui::Text(InstructionsUnitCycles::s_UnitName[uint32_t(type)].c_str(), "");
     ImGui::NextColumn();
     if (!m_Flushed)
     {
@@ -254,10 +270,10 @@ void Instruction::Advance() { m_CurrentCycle++; }
 void Instruction::Clean()
 {
     currentStage = Stage::ISSUE;
-    execute = {false, 0};
-    issue = {false, 0};
-    writeBack = {false, 0};
-    m_CurrentCycle = 0;
+    execute = {false, 1};
+    issue = {false, 1};
+    writeBack = {false, 1};
+    m_CurrentCycle = 1;
 }
 
 void Instruction::MarkAsFlushed()
@@ -268,4 +284,13 @@ void Instruction::MarkAsFlushed()
 bool Instruction::IsFlushed()
 {
     return m_Flushed;
+}
+
+void Instruction::UpdateCycleCount()
+{
+    m_MaxCycleNumber = InstructionsUnitCycles::s_CyclesCount[(int)(type)];
+    if (type == Unit::JAL || type == Unit::JALR || type == Unit::BEQ)
+        m_MaxCycleNumber++;
+    if (type == Unit::SW || type == Unit::LW)
+        m_MaxCycleNumber += 2;
 }

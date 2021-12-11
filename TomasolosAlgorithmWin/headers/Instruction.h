@@ -25,18 +25,12 @@ struct Instruction
     void ImGuiLayer(int PC, bool top, bool showTop) const;
     void MarkAsFlushed();
     bool IsFlushed();
-    inline void UpdateCycleCount()
-    {
-        m_MaxCycleNumber = s_CyclesCount[(int)(type)];
-        if (type == Unit::JAL || type == Unit::JALR || type == Unit::BEQ)
-            m_MaxCycleNumber++;
-        if (type == Unit::SW || type == Unit::LW)
-            m_MaxCycleNumber += 2;
-    }
+    void UpdateCycleCount();
     inline int32_t getPC() { return m_PC; }
     void Advance();
     bool Finished();
     void Clean();
+    inline int32_t getMax() { return m_MaxCycleNumber; }
 
 private:
     void Parse();
