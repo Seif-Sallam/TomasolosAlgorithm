@@ -14,7 +14,7 @@ enum class Unit
     NEG = 7,
     ABS = 8,
     DIV = 9,
-    NAN = 10,
+    INVALID = 10,
     UNIT_COUNT,
 };
 

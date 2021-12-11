@@ -32,7 +32,10 @@ Application::Application()
     m_InstructionsQueue.reserve(3000);
     m_Controller = new Controller(m_Top, m_InstructionsQueue, m_InstructionMemory, m_Stations, m_RegFile, m_Memory);
     PC = 0;
-    LoadData("DefaultProgram.txt");
+    if (LoadData("DefaultProgram.txt"))
+    {
+        std::cerr << "Couldn't open the default program\n";
+    }
 }
 
 void Application::Run()
