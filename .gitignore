@@ -34,3 +34,11 @@ Debug
 .vs
 .vscode
 Release
+*.aux
+*.fdb_latexmk
+*.log
+*.out
+*.tex
+*.fls
+imgui_log.txt
+*.synctex.gz

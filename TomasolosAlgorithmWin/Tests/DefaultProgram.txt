@@ -1,0 +1,55 @@
+# Add comment by putting # in the beginning of the line or the end of the line of an instruction
+# Do not put # in the middle of the line as it will cause the program to crash
+
+# Initialize both r1 and r2 with values
+addi r1, r0, 10
+addi r2, r0, -10
+
+# Store r1 and r2 in address 0 and 1
+store r1, 0(r0)
+store r2, 1(r0)
+
+# Load whatever in address 0 to r3
+load r3, 0(r0)
+
+# Add 4 to r3 and save it in r4
+addi r4, r3, 4
+
+# Add r2 to r4 and save it in r4
+add r4, r4, r2
+
+# Store the value of r4 in address 2
+store r4, 2(r0)
+
+# Negate r2 and save it in r5
+neg r5, r2
+
+# Store the avlue of r5 in address 3
+store r5, 3(r0)
+
+# Get the absolute value of r2 and put it in r6
+abs r6, r2
+
+# Store the value of r6 in address 4
+store r6, 4(r0)
+
+#Initialize r1 and r2
+addi r1, r0, 26
+addi r2, r0, 2
+
+# Divide r1 by r2 and save the value in r3
+div r3, r1, r2
+
+#Store the value of r3 in address 5
+store r3, 5(r0)
+
+# A loop to add numbers from 1 to 5 and save it to r1
+addi r1, r0, 0
+addi r7, r0, 5
+add r1, r1, r7
+addi r7, r7, -1
+beq r7, r0, 1
+jal r3, -4
+
+# Store the value in memory address 6
+store r1, 6(r0)
