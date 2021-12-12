@@ -40,7 +40,11 @@ If you are running Linux, check out the branch _master_.
 
 You can open the solution file found in the same directory as this README file.
 
-The project dependencies are only linked for Debug and Release modes for the x86 Archtircture. x64 Archticture is not linked in this project.
+The project will start with x64 as the default archticture. Change it to x86.
+
+The project dependencies are only linked for Debug and Release modes for the _x86_ Archtircture. x64 Archticture is not linked in this project.
+
+Trying to build with the x64 archticture will result in many linking and including errors. The libraries used are NOT linked with this archticture in mind.
 
 There are no dependencies needed to run the project since they all exist and are downloaded within this branch already.
 
