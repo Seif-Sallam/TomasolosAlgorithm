@@ -73,4 +73,5 @@ private:
     bool m_Fullscreen = false;
     double IPC = 0;
     double branchMisPri = 0;
+    bool m_Started = false;
 };

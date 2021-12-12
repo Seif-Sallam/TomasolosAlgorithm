@@ -76,6 +76,7 @@ void Application::Update()
         InstructionExecutationLayer();
     }
     ImGui::End(); // Docking space end
+    m_Started = true;
 }
 
 void Application::HandleEvents()
@@ -203,7 +204,8 @@ void Application::SetupDockingSpace()
 void Application::ReservationStationsLayer()
 {
     ImGui::Begin("Reservation Stations");
-    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
+    if (!m_Started)
+        ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::ReservationStations;
     const char *items[] = {"LW", "SW", "BEQ", "JAL/JALR", "ADD/ADDI", "NEG", "ABS", "DIV"};
@@ -317,7 +319,8 @@ void Application::MemoryImGuiLayer()
 {
     ImGui::Begin("Memory");
     // ImGui::BeginMenuBar();
-    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
+    if (!m_Started)
+        ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     ImGui::SetCursorPosX(ImGui::GetWindowSize().x - 30.0f);
     HelpMarker("The Memory window here is used to observe the different memory addresses accessed by the instructions.\n"
                "You can also add certain addresses to watch OR preload the memory with certain data.");
@@ -382,7 +385,8 @@ void Application::MemoryImGuiLayer()
 void Application::RegisterFileImGuiLayer()
 {
     ImGui::Begin("Register File");
-    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
+    if (!m_Started)
+        ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
         m_ActiveWindow = Windows::RegisterFile;
     HelpMarker("The Register File window shows the 8 registers in our simulation and the producing unit of each register at any point in time.\n"
@@ -473,7 +477,9 @@ void Application::InstructionsMemoryImGuiLayer()
     ImGui::Begin("Instructions Memory");
     HelpMarker("Instruction Memory window shows the loaded instructions from the text file and which one is the top."
                "The top instruction is the one about to be issued next cycle.\n");
-    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
+
+    if (!m_Started)
+        ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
     {
         m_ActiveWindow = Windows::Instructions;
@@ -516,7 +522,8 @@ void Application::InstructionsQueueImGuiLayer()
     HelpMarker("The instruction Queue just shows the different instructions that got into the Queue (issued already).\n"
                "It is designed this way and not an ever growing queue that is preloaded because of the branch and jump instructions that doesn't help with this implementation."
                "You cannot always tell which insturction will be next to the issuing. That is why we only add it to the Queue iff it was issued.\n");
-    ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
+    if (!m_Started)
+        ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
     {
         m_ActiveWindow = Windows::Instructions;
@@ -558,6 +565,8 @@ void Application::InstructionsQueueImGuiLayer()
 void Application::InstructionExecutationLayer()
 {
     ImGui::Begin("Instruction Executation");
+    if (!m_Started)
+        ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     {
         ImGui::Text("Logging to a \"Green_table.txt\"");
         ImGui::SameLine();
