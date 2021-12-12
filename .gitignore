@@ -34,4 +34,10 @@
 .vscode
 *.json
 Green_Table.txt
-Instructions.txt
+*.aux
+*.fdb_latexmk
+*.dls
+*.log
+*.synctex.gz
+*.fls
+*.tex

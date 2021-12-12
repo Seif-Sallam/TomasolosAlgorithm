@@ -1,0 +1,9 @@
+addi r1, r0, 30
+addi r2, r0, 2
+div r3, r1, r2
+store r3, 0(r0)
+load r4, 0(r0)
+addi r5, r0, 15
+store r5, 5(r0)
+add r6, r5, r4
+store r6, 10(r2)
