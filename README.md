@@ -89,3 +89,4 @@ This is a list of the different things the simulator can do to be user-friendly 
 - You can make the program fullscreen by clicking the button **F**, and exit the program by clicking **Escape** or finding the option _Close Application_ in the **File** menu
 - You can resize the windows and rearrange them the way you want.
   - If it happens and the windows start without them being docked to a certain spot on the screen, you can dock them yourself by dragging the window title and placing it where you want.
+- You can find around the program Question marks **_(?)_**. If you hover on them, you will have an info box that has some information about that window.
