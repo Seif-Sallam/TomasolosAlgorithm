@@ -176,7 +176,7 @@ void Instruction::Parse()
         type = Unit::DIV;
     else
     {
-        type = Unit::NAN;
+        type = Unit::INVALID;
     }
 
     if (type == Unit::ADD || type == Unit::DIV)
@@ -205,9 +205,9 @@ void Instruction::Parse()
         str = ((type == Unit::JALR) ? "JALR R" : ((type == Unit::NEG) ? "NEG R" : "ABS R")) + std::to_string(rd) + ", R" + std::to_string(rs1);
     }
 
-    if (type == Unit::NAN)
+    if (type == Unit::INVALID)
     {
-        str = "NAN INVALID INSTRUCITON";
+        str = "INVALID INSTRUCITON";
     }
 }
 
