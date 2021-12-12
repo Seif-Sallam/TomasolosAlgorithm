@@ -51,7 +51,9 @@ You can follow these command line commnds:
     git clone --recursive <repo Link>
     cd TomasolosAlgorithm
     make
+    ./Proj.out
 
+NOTE: The output file is named: _Proj.out_.
 Then wait until it ends compiling the project and the required dependances.
 
 ---
