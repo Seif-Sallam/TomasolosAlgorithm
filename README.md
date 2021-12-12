@@ -12,11 +12,14 @@ The master branch contains the Linux version of the project with a Makefile and 
 
 ## Showcase
 
-![](https://github.com/Seif-Sallam/TomasolosAlgorithm/tree/master/Images/Screenshot1.png)
+This is the normal view of the program and this is the first look into it.
+![Screenshot1](Images/Screenshot1.png)
 
-![](https://github.com/Seif-Sallam/TomasolosAlgorithm/tree/master/Images/Screenshot2.png)
+This is a preview of the instructions while being executed.
+![Screenshot2](Images/Screenshot2.png)
 
-![](https://github.com/Seif-Sallam/TomasolosAlgorithm/tree/master/Images/Screenshot3.png)
+This is a preview of the reservataion stations.
+![Screenshot3](Images/Screenshot3.png)
 
 ---
 
