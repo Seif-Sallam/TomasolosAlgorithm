@@ -41,3 +41,5 @@ Green_Table.txt
 *.synctex.gz
 *.fls
 *.tex
+build/
+
