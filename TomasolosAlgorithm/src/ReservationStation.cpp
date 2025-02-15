@@ -112,7 +112,7 @@ void ReservationStation::Execute(std::map<uint16_t, int16_t> &memory)
 void ReservationStation::Clean()
 {
     A = 0;
-    m_InitiateExecutation = false;
+    m_InitiateExecution = false;
     // m_UnderWorkInstruction = nullptr;
     m_IsBusy = false;
     Qj = "N";

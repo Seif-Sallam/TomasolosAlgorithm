@@ -42,7 +42,7 @@ private:
     void RegisterFileImGuiLayer();
     void InstructionsMemoryImGuiLayer();
     void InstructionsQueueImGuiLayer();
-    void InstructionExecutationLayer();
+    void InstructionExecutionLayer();
 
     void Reset();
     void LoadInstructionsFile(bool &);

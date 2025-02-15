@@ -150,7 +150,7 @@ void Controller::IssueInstructions()
                     {
                         m_RegFile.PushProducingUnit(m_Stations[i].m_Name, rd);
                     }
-                    m_Stations[i].m_InitiateExecutation = false;
+                    m_Stations[i].m_InitiateExecution = false;
                     currentInst.currentStage = Stage::EXECUTE;
                     m_Top++;
                     if (currentInst.type == Unit::JAL || currentInst.type == Unit::JALR)
@@ -215,19 +215,19 @@ void Controller::ExecuteInstructions()
                 if (OperandsReady(station))
                 {
                     if (station.m_Type != Unit::SW && station.m_Type != Unit::LW)
-                        station.m_InitiateExecutation = true;
+                        station.m_InitiateExecution = true;
                     else
                     {
                         if (currentInst.m_CurrentCycle == 2)
                         {
                             if (!CheckDependancy(station.A, i, currentInst.m_PC))
                             {
-                                station.m_InitiateExecutation = true;
+                                station.m_InitiateExecution = true;
                             }
                         }
                     }
                 }
-                if (station.m_InitiateExecutation)
+                if (station.m_InitiateExecution)
                 {
                     if (currentInst.m_CurrentCycle == 0)
                     {

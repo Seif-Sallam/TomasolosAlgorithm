@@ -73,7 +73,7 @@ void Application::Update()
         RegisterFileImGuiLayer();
         InstructionsMemoryImGuiLayer();
         InstructionsQueueImGuiLayer();
-        InstructionExecutationLayer();
+        InstructionExecutionLayer();
     }
     ImGui::End(); // Docking space end
     m_Started = true;
@@ -184,7 +184,7 @@ void Application::SetupDockingSpace()
     ImGui::Separator();
     ImGui::SetCursorPosX(ImGui::GetWindowSize().x - 460.0f);
     HelpMarker("Setting the PC value will change the value of the Index (Instruction Memory) and the PC (Instruction Queue).\n"
-               "It does not affect the performance of the algorithm nor the executation of the instructions.\n"
+               "It does not affect the performance of the algorithm nor the Execution of the instructions.\n"
                "The Cycle Number starts with -1. It indicates that we did not start the simulation yet.\n");
 
     ImGui::TextUnformatted("Custom Starting PC Value:");
@@ -521,7 +521,7 @@ void Application::InstructionsQueueImGuiLayer()
     ImGui::Begin("Instructions Queue");
     HelpMarker("The instruction Queue just shows the different instructions that got into the Queue (issued already).\n"
                "It is designed this way and not an ever growing queue that is preloaded because of the branch and jump instructions that doesn't help with this implementation."
-               "You cannot always tell which insturction will be next to the issuing. That is why we only add it to the Queue iff it was issued.\n");
+               "You cannot always tell which instruction will be next to the issuing. That is why we only add it to the Queue iff it was issued.\n");
     if (!m_Started)
         ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     if (ImGui::IsWindowFocused())
@@ -562,9 +562,9 @@ void Application::InstructionsQueueImGuiLayer()
     ImGui::End();
 }
 
-void Application::InstructionExecutationLayer()
+void Application::InstructionExecutionLayer()
 {
-    ImGui::Begin("Instruction Executation");
+    ImGui::Begin("Instruction Execution");
     if (!m_Started)
         ImGui::SetWindowSize(ImVec2(m_WindowSize.x / 2.0f, m_WindowSize.y / 2.0f));
     {
@@ -576,8 +576,8 @@ void Application::InstructionExecutationLayer()
         if (ImGui::Button("Log to file###1"))
             LogToFile(addFlushed);
         ImGui::SameLine();
-        HelpMarker("This window shows the prograss of the provieded program to the instructions and when it was issues, started executation and when it finished executation and when it wrote back.\n"
-                   "Click the button Log to file to save the data to the file \"Green_Table.txt\". It will also contain the number of cycles, IPC, and the branch misprediction percentage.\n");
+        HelpMarker("This window shows the progress of the provided program to the instructions and when it was issues, started Execution and when it finished Execution and when it wrote back.\n"
+                   "Click the button Log to file to save the data to the file \"Green_Table.txt\". It will also contain the number of cycles, IPC, and the branch mis-prediction percentage.\n");
         int lastInstructionCycle = m_Controller->GetLastInstructionWrote();
         int numberOfInstructions = m_Controller->GetNumberOfInstructions();
         if (lastInstructionCycle != 0)
@@ -598,9 +598,9 @@ void Application::InstructionExecutationLayer()
             ImGui::NextColumn();
             ImGui::Text("Issue");
             ImGui::NextColumn();
-            ImGui::Text("Executation Start");
+            ImGui::Text("Execution Start");
             ImGui::NextColumn();
-            ImGui::Text("Executetion End");
+            ImGui::Text("Execution End");
             ImGui::NextColumn();
             ImGui::Text("WriteBack");
             ImGui::NextColumn();
@@ -731,7 +731,7 @@ void Application::LogToFile(bool addFlushed)
     output << "Last Instruction Cycle: " << lastInstructionCycle << std::endl;
     output << "IPC: " << IPC << std::endl;
 
-    output << "Branch misprediction percentage: " << branchMisPri << "%" << std::endl;
+    output << "Branch mis-prediction percentage: " << branchMisPri << "%" << std::endl;
     int32_t spaces = 20;
     output << "\nGreen Table:\n";
     output << std::left << std::setfill('-') << std::setw(125) << "";
@@ -740,7 +740,7 @@ void Application::LogToFile(bool addFlushed)
            << " | " << std::setw(spaces) << "Instruction"
            << " | " << std::setw(spaces) << "Issue"
            << " | " << std::setw(spaces) << "Execution Start"
-           << " | " << std::setw(spaces) << "Executation End"
+           << " | " << std::setw(spaces) << "Execution End"
            << " | " << std::setw(spaces) << "Write back"
            << " |" << std::endl;
 

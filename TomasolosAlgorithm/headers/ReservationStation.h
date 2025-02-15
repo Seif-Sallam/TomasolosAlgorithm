@@ -32,6 +32,6 @@ private:
     int16_t result;
     int m_StationNumber = 0;
     Instruction *m_UnderWorkInstruction;
-    bool m_InitiateExecutation = false;
+    bool m_InitiateExecution = false;
     friend class Controller;
 };
